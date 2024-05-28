@@ -661,6 +661,7 @@ if (USE_TF)
 endif() # USE_TF
 
 # OpenCV
+message(STATUS "OpenCV ${USE_OPENCV_VERSION} REQUIRED COMPONENTS ${OPENCV_MODULES}")
 set(OPENCV_MODULES core imgproc highgui imgcodecs videoio)
 if (USE_CUDA_CV)
   list(APPEND OPENCV_MODULES cudaimgproc cudaarithm cudawarping cudacodec)
