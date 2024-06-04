@@ -705,6 +705,12 @@ namespace dd
             this->_logger->info("mirror: {}", has_mirror);
             bool has_rotate
                 = ad_mllib.has("rotate") && ad_mllib.get("rotate").get<bool>();
+	    // disable rotate for non square image size
+     	    if (inputc.width() != inputc.height())
+	      {
+	    has_rotate = 0;
+            this->_logger->error("rotate augment was not applied. To enable rotate, select img_width and img_height to be equal");
+	      }
             this->_logger->info("rotate: {}", has_rotate);
             CropParams crop_params;
             if (ad_mllib.has("crop_size"))
