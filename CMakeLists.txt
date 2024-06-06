@@ -47,6 +47,16 @@ if(USE_TF AND USE_TORCH)
     FATAL_ERROR "Building with tensorflow AND torch can't be build together")
 endif()
 
+if(BUILD_OPENCV)
+  message("Building opencv from source")
+  if(OpenCV_DIR)
+    message(
+      FATAL_ERROR
+        "Please choose between building opencv from source and providing a local opencv install - BUILD_OPENCV and OpenCV_DIR are exclusive"
+    )
+  endif()
+endif()
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
