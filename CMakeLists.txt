@@ -25,24 +25,26 @@ option(BUILD_PROTOBUF "build PROTOBUF instead of using system library" ON)
 option(USE_BOOST_BACKTRACE "use boost backtrace" ON)
 option(USE_OPENMP "use OpenMP" ON)
 
-if (USE_CAFFE)
+if(USE_CAFFE)
   add_definitions(-DUSE_CAFFE)
 endif()
 
-if (USE_TENSORRT_OSS)
+if(USE_TENSORRT_OSS)
   set(USE_TENSORRT ON)
 endif()
 
-if (USE_TF AND USE_CAFFE2)
-  message(FATAL_ERROR "Building with tensorflow AND caffe2 can't be build together")
+if(USE_TF AND USE_CAFFE2)
+  message(
+    FATAL_ERROR "Building with tensorflow AND caffe2 can't be build together")
 endif()
 
-if (USE_TORCH AND USE_CAFFE2)
+if(USE_TORCH AND USE_CAFFE2)
   message(FATAL_ERROR "Building with torch AND caffe2 can't be build together")
 endif()
 
-if (USE_TF AND USE_TORCH)
-  message(FATAL_ERROR "Building with tensorflow AND torch can't be build together")
+if(USE_TF AND USE_TORCH)
+  message(
+    FATAL_ERROR "Building with tensorflow AND torch can't be build together")
 endif()
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -53,13 +55,13 @@ ProcessorCount(N)
 include(ExternalProject)
 
 # options
-OPTION(BUILD_TESTS "Should the tests be built")
-OPTION(BUILD_TOOLS "Should the tools be built")
-OPTION(USE_COMMAND_LINE "build command line JSON API" ON)
-OPTION(USE_JSON_API "build internal JSON API" ON)
-OPTION(USE_HTTP_SERVER "build cppnet-lib version of http JSON API " OFF)
-OPTION(USE_HTTP_SERVER_OATPP "build oatpp version of http JSON API" ON)
-OPTION(USE_OATPP_SWAGGER "Enable Swagger documentation endpoint" ON)
+option(BUILD_TESTS "Should the tests be built")
+option(BUILD_TOOLS "Should the tools be built")
+option(USE_COMMAND_LINE "build command line JSON API" ON)
+option(USE_JSON_API "build internal JSON API" ON)
+option(USE_HTTP_SERVER "build cppnet-lib version of http JSON API " OFF)
+option(USE_HTTP_SERVER_OATPP "build oatpp version of http JSON API" ON)
+option(USE_OATPP_SWAGGER "Enable Swagger documentation endpoint" ON)
 
 # user set variables
 set(USE_OPENCV_VERSION CACHE STRING "OpenCV Version used by DeepDetect")
@@ -69,39 +71,37 @@ execute_process(
   COMMAND git rev-parse --abbrev-ref HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_BRANCH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Get the current version
 execute_process(
   COMMAND git describe --tags --broken
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_VERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
   COMMAND git log -1 --format=%H
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_COMMIT_HASH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-if (NOT EXISTS ${CMAKE_BINARY_DIR}/src)
-  execute_process(
-	COMMAND  bash -c "mkdir ${CMAKE_BINARY_DIR}/src")
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/src)
+  execute_process(COMMAND bash -c "mkdir ${CMAKE_BINARY_DIR}/src")
 endif()
 
-if (USE_OPENMP)
-  if (APPLE)
+if(USE_OPENMP)
+  if(APPLE)
     set(FOPENMP "-Xclang -fopenmp")
-    find_library(OPENMP_LIBRARIES REQUIRED
+    find_library(
+      OPENMP_LIBRARIES REQUIRED
       NAMES omp libomp
       HINTS /opt/homebrew/Cellar/libomp/*/lib/)
 
     message(STATUS "OpenMP location: ${OPENMP_LIBRARIES}")
-    find_path(OPENMP_INCLUDE_DIRS REQUIRED
+    find_path(
+      OPENMP_INCLUDE_DIRS REQUIRED
       NAMES omp.h
       HINTS /opt/homebrew/Cellar/libomp/*/include/)
     message(STATUS "OpenMP header ${OPENMP_INCLUDE_DIRS}")
@@ -113,14 +113,16 @@ else()
   set(FOPENMP "")
 endif()
 
-if (APPLE)
-    set(CMAKE_CXX_FLAGS "-g -O2 -Wall -Wextra ${FOPENMP} -fPIC -std=c++17")
+if(APPLE)
+  set(CMAKE_CXX_FLAGS "-g -O2 -Wall -Wextra ${FOPENMP} -fPIC -std=c++17")
 
-    message(STATUS "Apple build: CUDA is disabled")
-    set(USE_CUDNN OFF)
-    set(USE_CUDA_CV OFF)
+  message(STATUS "Apple build: CUDA is disabled")
+  set(USE_CUDNN OFF)
+  set(USE_CUDA_CV OFF)
 else()
-    set(CMAKE_CXX_FLAGS "-g -O2 -Wall -Wextra ${FOPENMP} -fPIC -std=c++17 -Wl,--no-as-needed -ltcmalloc_minimal")
+  set(CMAKE_CXX_FLAGS
+      "-g -O2 -Wall -Wextra ${FOPENMP} -fPIC -std=c++17 -Wl,--no-as-needed -ltcmalloc_minimal"
+  )
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
@@ -131,183 +133,199 @@ if(WARNING)
 endif()
 
 if(RELEASE)
-    set(BUILD_TYPE release)
+  set(BUILD_TYPE release)
 else()
-    set(BUILD_TYPE dev)
+  set(BUILD_TYPE dev)
 endif()
 
-if (USE_COMMAND_LINE)
-  if (NOT USE_CAFFE)
+if(USE_COMMAND_LINE)
+  if(NOT USE_CAFFE)
     set(USE_JSON_API ON)
   endif()
   string(APPEND CMAKE_CXX_FLAGS " -DUSE_COMMAND_LINE")
 endif()
 
-if (USE_HTTP_SERVER)
+if(USE_HTTP_SERVER)
   set(USE_JSON_API ON)
   string(APPEND CMAKE_CXX_FLAGS " -DUSE_HTTP_SERVER")
 endif()
-if (USE_HTTP_SERVER_OATPP)
+if(USE_HTTP_SERVER_OATPP)
   set(USE_JSON_API ON)
   string(APPEND CMAKE_CXX_FLAGS " -DUSE_HTTP_SERVER_OATPP")
 endif()
 
-if (USE_JSON_API)
+if(USE_JSON_API)
   string(APPEND CMAKE_CXX_FLAGS " -DUSE_JSON_API")
 endif()
 
 # VARIANT
 
-if (APPLE)
-    # Variant is not on brew
-    set(VARIANT_VERSION v1.2.0)
-    message(STATUS "Download Variant library ${VARIANT_VERSION}")
-    ExternalProject_Add(
-        variant
-        PREFIX variant
-        UPDATE_DISCONNECTED 1
-        URL https://github.com/mapbox/variant/archive/refs/tags/${VARIANT_VERSION}.tar.gz
-        URL_HASH SHA256=7059f4420d504c4bc96f8a462a0f6d029c5be914ba55cc030a0a773366dd7bc8
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-    )
-    set(VARIANT_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/variant/src/variant/include/")
+if(APPLE)
+  # Variant is not on brew
+  set(VARIANT_VERSION v1.2.0)
+  message(STATUS "Download Variant library ${VARIANT_VERSION}")
+  ExternalProject_Add(
+    variant
+    PREFIX variant
+    UPDATE_DISCONNECTED 1
+    URL https://github.com/mapbox/variant/archive/refs/tags/${VARIANT_VERSION}.tar.gz
+    URL_HASH
+      SHA256=7059f4420d504c4bc96f8a462a0f6d029c5be914ba55cc030a0a773366dd7bc8
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND "")
+  set(VARIANT_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/variant/src/variant/include/")
 endif()
 
 # PROTOBUF
 
 # use protobuf same version as pytorch one
-if (BUILD_PROTOBUF)
-    set(PROTOBUF_VERSION 3.11.4)
-    ExternalProject_Add(
-        protobuf
-        PREFIX protobuf
-        UPDATE_DISCONNECTED 1
-        URL https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
-        URL_HASH SHA256=ba4bbc3e6b58d2ccfe406e616576ef48710a2aae205f463618025fc691549cfe
-        SOURCE_SUBDIR cmake
-        CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
-        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
-        -DBUILD_SHARED_LIBS:BOOL=ON
-        -Dprotobuf_BUILD_TESTS:BOOL=OFF
-        -Dprotobuf_BUILD_EXAMPLES:BOOL=OFF
-        INSTALL_COMMAND ""
-    )
-    set(PROTOBUF_INCLUDE_DIR ${CMAKE_BINARY_DIR}/protobuf/src/protobuf/src)
-    set(PROTOBUF_LIB_DIR ${CMAKE_BINARY_DIR}/protobuf/src/protobuf-build/)
-    set(PROTOBUF_PROTOC ${PROTOBUF_LIB_DIR}/protoc)
+if(BUILD_PROTOBUF)
+  set(PROTOBUF_VERSION 3.11.4)
+  ExternalProject_Add(
+    protobuf
+    PREFIX protobuf
+    UPDATE_DISCONNECTED 1
+    URL https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
+    URL_HASH
+      SHA256=ba4bbc3e6b58d2ccfe406e616576ef48710a2aae205f463618025fc691549cfe
+    SOURCE_SUBDIR cmake
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+               -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
+               -DBUILD_SHARED_LIBS:BOOL=ON
+               -Dprotobuf_BUILD_TESTS:BOOL=OFF
+               -Dprotobuf_BUILD_EXAMPLES:BOOL=OFF
+    INSTALL_COMMAND "")
+  set(PROTOBUF_INCLUDE_DIR ${CMAKE_BINARY_DIR}/protobuf/src/protobuf/src)
+  set(PROTOBUF_LIB_DIR ${CMAKE_BINARY_DIR}/protobuf/src/protobuf-build/)
+  set(PROTOBUF_PROTOC ${PROTOBUF_LIB_DIR}/protoc)
 
-    if (APPLE)
-      set(PROTOBUF_LIB_DEPS ${PROTOBUF_LIB_DIR}/libprotobuf.dylib ${PROTOBUF_LIB_DIR}/libprotoc.dylib ${PROTOBUF_LIB_DIR}/libprotobuf-lite.dylib)
-    else()
-      set(PROTOBUF_LIB_DEPS ${PROTOBUF_LIB_DIR}/libprotobuf.so ${PROTOBUF_LIB_DIR}/libprotoc.so ${PROTOBUF_LIB_DIR}/libprotobuf-lite.so)
-    endif()
+  if(APPLE)
+    set(PROTOBUF_LIB_DEPS
+        ${PROTOBUF_LIB_DIR}/libprotobuf.dylib
+        ${PROTOBUF_LIB_DIR}/libprotoc.dylib
+        ${PROTOBUF_LIB_DIR}/libprotobuf-lite.dylib)
+  else()
+    set(PROTOBUF_LIB_DEPS
+        ${PROTOBUF_LIB_DIR}/libprotobuf.so ${PROTOBUF_LIB_DIR}/libprotoc.so
+        ${PROTOBUF_LIB_DIR}/libprotobuf-lite.so)
+  endif()
 
-    link_directories(${PROTOBUF_LIB_DIR})
-    include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIR})
+  link_directories(${PROTOBUF_LIB_DIR})
+  include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIR})
 else()
-    if (USE_CAFFE OR USE_TORCH)
-        find_package(Protobuf REQUIRED 3.11.4)
-    else()
-        find_package(Protobuf REQUIRED)
-    endif()
+  if(USE_CAFFE OR USE_TORCH)
+    find_package(Protobuf REQUIRED 3.11.4)
+  else()
+    find_package(Protobuf REQUIRED)
+  endif()
 
-    set(PROTOBUF_PROTOC ${Protobuf_PROTOC_EXECUTABLE})
-    set(PROTOBUF_INCLUDE_DIR ${Protobuf_INCLUDE_DIRS})
-    set(PROTOBUF_LIB_DEPS protobuf::libprotobuf)
-    add_custom_target(protobuf)
+  set(PROTOBUF_PROTOC ${Protobuf_PROTOC_EXECUTABLE})
+  set(PROTOBUF_INCLUDE_DIR ${Protobuf_INCLUDE_DIRS})
+  set(PROTOBUF_LIB_DEPS protobuf::libprotobuf)
+  add_custom_target(protobuf)
 
-    # absl for protobuf 22+
-    if (${Protobuf_VERSION} VERSION_GREATER_EQUAL 4.22.0)
-      message(STATUS "Add Abseil dependency required by Protobuf V${Protobuf_VERSION}")
-      if(NOT TARGET absl::strings)
-        find_package(absl CONFIG)
-      endif()
-      set_target_properties(protobuf::libprotobuf PROPERTIES
-        INTERFACE_LINK_LIBRARIES "absl::absl_check;absl::absl_log;absl::algorithm;absl::base;absl::bind_front;absl::bits;absl::btree;absl::cleanup;absl::cord;absl::core_headers;absl::debugging;absl::die_if_null;absl::dynamic_annotations;absl::flags;absl::flat_hash_map;absl::flat_hash_set;absl::function_ref;absl::hash;absl::layout;absl::log_initialize;absl::log_severity;absl::memory;absl::node_hash_map;absl::node_hash_set;absl::optional;absl::span;absl::status;absl::statusor;absl::strings;absl::synchronization;absl::time;absl::type_traits;absl::utility;absl::variant"
-      )
+  # absl for protobuf 22+
+  if(${Protobuf_VERSION} VERSION_GREATER_EQUAL 4.22.0)
+    message(
+      STATUS "Add Abseil dependency required by Protobuf V${Protobuf_VERSION}")
+    if(NOT TARGET absl::strings)
+      find_package(absl CONFIG)
     endif()
+    set_target_properties(
+      protobuf::libprotobuf
+      PROPERTIES
+        INTERFACE_LINK_LIBRARIES
+        "absl::absl_check;absl::absl_log;absl::algorithm;absl::base;absl::bind_front;absl::bits;absl::btree;absl::cleanup;absl::cord;absl::core_headers;absl::debugging;absl::die_if_null;absl::dynamic_annotations;absl::flags;absl::flat_hash_map;absl::flat_hash_set;absl::function_ref;absl::hash;absl::layout;absl::log_initialize;absl::log_severity;absl::memory;absl::node_hash_map;absl::node_hash_set;absl::optional;absl::span;absl::status;absl::statusor;absl::strings;absl::synchronization;absl::time;absl::type_traits;absl::utility;absl::variant"
+    )
+  endif()
 endif()
 
 file(
-    DOWNLOAD https://raw.githubusercontent.com/jolibrain/caffe/master/src/caffe/proto/caffe.proto ${CMAKE_BINARY_DIR}/caffe.proto
-    EXPECTED_HASH SHA256=e82a1d51635be93e964c6debcb4cd76514fada46348fa7b30355c14850767360
-)
+  DOWNLOAD
+  https://raw.githubusercontent.com/jolibrain/caffe/master/src/caffe/proto/caffe.proto
+  ${CMAKE_BINARY_DIR}/caffe.proto
+  EXPECTED_HASH
+    SHA256=e82a1d51635be93e964c6debcb4cd76514fada46348fa7b30355c14850767360)
 add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/src/caffe.pb.h ${CMAKE_BINARY_DIR}/src/caffe.pb.cc
-    COMMAND LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR} ${PROTOBUF_PROTOC} --proto_path=${CMAKE_BINARY_DIR} --cpp_out=${CMAKE_BINARY_DIR}/src ${CMAKE_BINARY_DIR}/caffe.proto
-    MAIN_DEPENDENCY ${CMAKE_BINARY_DIR}/caffe.proto
-    COMMENT Generating caffe.pb.h and caffe.pb.cc
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS protobuf
-)
-add_custom_target(
-    caffe_pb_h
-    DEPENDS ${CMAKE_BINARY_DIR}/src/caffe.pb.h ${CMAKE_BINARY_DIR}/src/caffe.pb.cc
-)
-
+  OUTPUT ${CMAKE_BINARY_DIR}/src/caffe.pb.h ${CMAKE_BINARY_DIR}/src/caffe.pb.cc
+  COMMAND
+    LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR} ${PROTOBUF_PROTOC}
+    --proto_path=${CMAKE_BINARY_DIR} --cpp_out=${CMAKE_BINARY_DIR}/src
+    ${CMAKE_BINARY_DIR}/caffe.proto
+  MAIN_DEPENDENCY ${CMAKE_BINARY_DIR}/caffe.proto
+  COMMENT Generating caffe.pb.h and caffe.pb.cc
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  DEPENDS protobuf)
+add_custom_target(caffe_pb_h DEPENDS ${CMAKE_BINARY_DIR}/src/caffe.pb.h
+                                     ${CMAKE_BINARY_DIR}/src/caffe.pb.cc)
 
 # dependency on Eigen for confusion matrix fast computation
-if (USE_TF)
-  set(TENSORFLOW_CC_DIR ${CMAKE_BINARY_DIR}/tensorflow_cc/src/tensorflow_cc-build/)
-  set(EIGEN3_INCLUDE_DIR ${TENSORFLOW_CC_DIR}/tensorflow/tensorflow/contrib/makefile/downloads/eigen/)
-elseif (USE_CAFFE2)
+if(USE_TF)
+  set(TENSORFLOW_CC_DIR
+      ${CMAKE_BINARY_DIR}/tensorflow_cc/src/tensorflow_cc-build/)
+  set(EIGEN3_INCLUDE_DIR
+      ${TENSORFLOW_CC_DIR}/tensorflow/tensorflow/contrib/makefile/downloads/eigen/
+  )
+elseif(USE_CAFFE2)
   set(PYTORCH_PATH ${CMAKE_BINARY_DIR}/pytorch/src/pytorch)
   set(DETECTRON_PATH ${CMAKE_BINARY_DIR}/detectron/src/detectron)
   set(EIGEN3_INCLUDE_DIR ${PYTORCH_PATH}/third_party/eigen)
 else()
-   find_package(PkgConfig)
-   pkg_search_module(Eigen3 REQUIRED eigen3)
-   set(EIGEN3_INCLUDE_DIR "/usr/include/eigen3")
+  find_package(PkgConfig)
+  pkg_search_module(Eigen3 REQUIRED eigen3)
+  set(EIGEN3_INCLUDE_DIR "/usr/include/eigen3")
 endif()
 
 set(eigen_archive_hash "50812b426b7c")
 
 include_directories("${EIGEN3_INCLUDE_DIR}")
 
-# spdlog, usefull for ubuntu20.04/rhel/centos that ship a bugged version (missing header, don't compile with nvcc, ...)
-if (BUILD_SPDLOG)
-    ExternalProject_Add(
-        spdlog
-        UPDATE_DISCONNECTED 1
-        PREFIX spdlog
-        URL https://github.com/gabime/spdlog/archive/v1.8.2.tar.gz
-        URL_HASH SHA256=e20e6bd8f57e866eaf25a5417f0a38a116e537f1a77ac7b5409ca2b180cec0d5
-        BUILD_IN_SOURCE true
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/spdlog/build -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-    )
-    set(SPDLOG_LIB_DEPS ${CMAKE_BINARY_DIR}/spdlog/build/lib/libspdlog.a)
-    set(SPDLOG_LIB_DIR ${CMAKE_BINARY_DIR}/spdlog/build/lib)
-    set(SPDLOG_CAFFE_LIB_DEPS :libspdlog.a)
-    set(SPDLOG_INCLUDE_DIR ${CMAKE_BINARY_DIR}/spdlog/build/include)
-    include_directories(SYSTEM ${SPDLOG_INCLUDE_DIR})
+# spdlog, usefull for ubuntu20.04/rhel/centos that ship a bugged version
+# (missing header, don't compile with nvcc, ...)
+if(BUILD_SPDLOG)
+  ExternalProject_Add(
+    spdlog
+    UPDATE_DISCONNECTED 1
+    PREFIX spdlog
+    URL https://github.com/gabime/spdlog/archive/v1.8.2.tar.gz
+    URL_HASH
+      SHA256=e20e6bd8f57e866eaf25a5417f0a38a116e537f1a77ac7b5409ca2b180cec0d5
+    BUILD_IN_SOURCE true
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/spdlog/build
+               -DCMAKE_POSITION_INDEPENDENT_CODE=ON)
+  set(SPDLOG_LIB_DEPS ${CMAKE_BINARY_DIR}/spdlog/build/lib/libspdlog.a)
+  set(SPDLOG_LIB_DIR ${CMAKE_BINARY_DIR}/spdlog/build/lib)
+  set(SPDLOG_CAFFE_LIB_DEPS :libspdlog.a)
+  set(SPDLOG_INCLUDE_DIR ${CMAKE_BINARY_DIR}/spdlog/build/include)
+  include_directories(SYSTEM ${SPDLOG_INCLUDE_DIR})
 else()
-    find_package(spdlog 1.8.2 CONFIG REQUIRED)
-    set(SPDLOG_LIB_DEPS spdlog::spdlog)
+  find_package(spdlog 1.8.2 CONFIG REQUIRED)
+  set(SPDLOG_LIB_DEPS spdlog::spdlog)
 endif()
 
 # hdf5
-if (USE_HDF5)
-  if (RPI3)
+if(USE_HDF5)
+  if(RPI3)
     set(HDF5_LIB /usr/lib/arm-linux-gnueabihf/hdf5/serial)
   else()
     set(HDF5_LIB /usr/lib/x86_64-linux-gnu/hdf5/serial)
   endif()
-  set (HDF5_INCLUDE /usr/include/hdf5/serial)
+  set(HDF5_INCLUDE /usr/include/hdf5/serial)
   include_directories(${HDF5_INCLUDE})
 endif()
 
 # dependency on Boost
-if (USE_BOOST_BACKTRACE)
-    add_definitions(-DUSE_BOOST_BACKTRACE)
-    find_package(Boost 1.54 REQUIRED COMPONENTS filesystem thread system iostreams stacktrace_backtrace)
-    string(APPEND CMAKE_CXX_FLAGS " -DBOOST_STACKTRACE_USE_BACKTRACE -DBOOST_STACKTRACE_LINK")
+if(USE_BOOST_BACKTRACE)
+  add_definitions(-DUSE_BOOST_BACKTRACE)
+  find_package(Boost 1.54 REQUIRED COMPONENTS filesystem thread system
+                                              iostreams stacktrace_backtrace)
+  string(APPEND CMAKE_CXX_FLAGS
+         " -DBOOST_STACKTRACE_USE_BACKTRACE -DBOOST_STACKTRACE_LINK")
 else()
-    find_package(Boost 1.54 REQUIRED COMPONENTS filesystem thread system iostreams)
+  find_package(Boost 1.54 REQUIRED COMPONENTS filesystem thread system
+                                              iostreams)
 endif()
-
 
 # CUDA OR CPU options
 option(USE_XGBOOST_CPU_ONLY "use XGBOOST without CUDA" ON)
@@ -322,11 +340,11 @@ option(USE_FAISS_CPU_ONLY "use FAISS without CUDA" OFF)
 option(USE_DLIB_AVX "build dlib with AVX enabled" OFF)
 
 # Deprecated flag
-if (USE_XGBOOST_GPU)
+if(USE_XGBOOST_GPU)
   set(USE_XGBOOST_CPU_ONLY OFF)
 endif()
 
-if (USE_CPU_ONLY)
+if(USE_CPU_ONLY)
   set(USE_XGBOOST_CPU_ONLY ON)
   set(USE_CAFFE_CPU_ONLY ON)
   set(USE_DLIB_CPU_ONLY ON)
@@ -341,45 +359,45 @@ else()
 endif()
 
 # CUDA validation
-if (NOT APPLE AND NOT CUDA_FOUND)
-  if (USE_TENSORRT)
-      message(FATAL, "USE_TENSORRT=ON needs CUDA installed")
+if(NOT APPLE AND NOT CUDA_FOUND)
+  if(USE_TENSORRT)
+    message(FATAL, "USE_TENSORRT=ON needs CUDA installed")
   endif()
-  if (USE_TF AND NOT USE_TF_CPU_ONLY)
-      message(FATAL, "USE_TF=ON needs CUDA installed")
+  if(USE_TF AND NOT USE_TF_CPU_ONLY)
+    message(FATAL, "USE_TF=ON needs CUDA installed")
   endif()
-  if (USE_CAFFE AND NOT USE_CAFFE_CPU_ONLY)
-      message(FATAL, "USE_CAFFE=ON needs CUDA installed")
+  if(USE_CAFFE AND NOT USE_CAFFE_CPU_ONLY)
+    message(FATAL, "USE_CAFFE=ON needs CUDA installed")
   endif()
-  if (USE_DLIB AND NOT USE_DLIB_CPU_ONLY)
-      message(FATAL, "USE_DLIB=ON needs CUDA installed")
-      if (USE_CUDNN)
-          message(FATAL "Dlib GPU enabled without cuDNN, please set -DUSE_CUDNN=ON")
-      endif()
+  if(USE_DLIB AND NOT USE_DLIB_CPU_ONLY)
+    message(FATAL, "USE_DLIB=ON needs CUDA installed")
+    if(USE_CUDNN)
+      message(FATAL "Dlib GPU enabled without cuDNN, please set -DUSE_CUDNN=ON")
+    endif()
   endif()
-  if (USE_TORCH AND NOT USE_TORCH_CPU_ONLY)
-      message(FATAL, "USE_TORCH=ON needs CUDA installed")
+  if(USE_TORCH AND NOT USE_TORCH_CPU_ONLY)
+    message(FATAL, "USE_TORCH=ON needs CUDA installed")
   endif()
-  if (USE_CAFFE2 AND NOT USE_CAFFE2_CPU_ONLY)
-      message(FATAL, "USE_CAFFE2=ON needs CUDA installed")
+  if(USE_CAFFE2 AND NOT USE_CAFFE2_CPU_ONLY)
+    message(FATAL, "USE_CAFFE2=ON needs CUDA installed")
   endif()
-  if (USE_FAISS AND NOT USE_FAISS_CPU_ONLY)
-      message(FATAL, "USE_FAISS=ON needs CUDA installed")
+  if(USE_FAISS AND NOT USE_FAISS_CPU_ONLY)
+    message(FATAL, "USE_FAISS=ON needs CUDA installed")
   endif()
 endif()
 
 # annoy
-if (USE_CAFFE OR USE_TORCH)
-  if (USE_SIMSEARCH)
-    if (USE_FAISS AND USE_ANNOY)
-      message (STATUS "ANNOY selected, using ANNOY as simsearch backend")
+if(USE_CAFFE OR USE_TORCH)
+  if(USE_SIMSEARCH)
+    if(USE_FAISS AND USE_ANNOY)
+      message(STATUS "ANNOY selected, using ANNOY as simsearch backend")
       set(USE_FAISS OFF)
     endif()
-    if (NOT USE_FAISS AND NOT USE_ANNOY)
-      message (STATUS "FAISS deselected , using ANNOY as simssearch backend")
+    if(NOT USE_FAISS AND NOT USE_ANNOY)
+      message(STATUS "FAISS deselected , using ANNOY as simssearch backend")
       set(USE_ANNOY ON)
     endif()
-    IF (USE_ANNOY)
+    if(USE_ANNOY)
       message(STATUS "Fetching Annoy")
       add_definitions(-DUSE_SIMSEARCH)
       add_definitions(-DUSE_ANNOY)
@@ -390,17 +408,18 @@ if (USE_CAFFE OR USE_TORCH)
         CONFIGURE_COMMAND python setup.py build
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
-        BUILD_IN_SOURCE 1
-      )
+        BUILD_IN_SOURCE 1)
 
       set(ANNOY_INCLUDE_DIR ${CMAKE_BINARY_DIR}/annoy/src/annoy/src/)
       include_directories(SYSTEM "${ANNOY_INCLUDE_DIR}")
     endif()
     if(USE_FAISS)
-      if (USE_FAISS_CPU_ONLY)
-	    set(CONFIGURE_OPTS "-DFAISS_ENABLE_GPU=OFF" "-DBUILD_TESTING=OFF" "-DFAISS_ENABLE_PYTHON=OFF")
+      if(USE_FAISS_CPU_ONLY)
+        set(CONFIGURE_OPTS "-DFAISS_ENABLE_GPU=OFF" "-DBUILD_TESTING=OFF"
+                           "-DFAISS_ENABLE_PYTHON=OFF")
       else()
-        set(CONFIGURE_OPTS "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc" "-DBUILD_TESTING=OFF" "-DFAISS_ENABLE_PYTHON=OFF")
+        set(CONFIGURE_OPTS "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc"
+                           "-DBUILD_TESTING=OFF" "-DFAISS_ENABLE_PYTHON=OFF")
       endif()
       message(STATUS "Fetching FAISS")
       add_definitions(-DUSE_FAISS)
@@ -415,8 +434,7 @@ if (USE_CAFFE OR USE_TORCH)
         CONFIGURE_COMMAND cmake ${CONFIGURE_OPTS} -B build .
         BUILD_COMMAND make -C build -j${N}
         INSTALL_COMMAND ""
-        BUILD_IN_SOURCE 1
-      )
+        BUILD_IN_SOURCE 1)
 
       set(FAISS_INCLUDE_DIR ${CMAKE_BINARY_DIR}/faiss/src/faiss)
       include_directories("${FAISS_INCLUDE_DIR}")
@@ -428,18 +446,19 @@ else()
   set(USE_SIMSEARCH OFF)
 endif()
 
-
-if (USE_CUDNN)
+if(USE_CUDNN)
   find_package(CUDNN REQUIRED)
 endif()
 
 # CUDA dependencies
-if (CUDA_FOUND)
-  set(CUDA_LIB_DEPS ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_curand_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY})
-  if (USE_CUDNN)
+if(CUDA_FOUND)
+  set(CUDA_LIB_DEPS
+      ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_curand_LIBRARY}
+      ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY})
+  if(USE_CUDNN)
     set(CUDA_LIB_DEPS ${CUDA_LIB_DEPS} ${CUDNN_LIBRARY})
   endif()
-  if ("${CUDA_ARCH}" STREQUAL "")
+  if("${CUDA_ARCH}" STREQUAL "")
     message(STATUS "CUDA_ARCH not set, using detected set ${NVCC_ARCH_EXTRA}")
 
     # Convert arch to correct format
@@ -454,117 +473,123 @@ if (CUDA_FOUND)
 else()
   set(CUDA_LIB_DEPS "")
 
-  if (NOT APPLE)
-    # XXX: On Apple platforms MPS can be used, so we'd need a different condition
+  if(NOT APPLE)
+    # XXX: On Apple platforms MPS can be used, so we'd need a different
+    # condition
     add_definitions(-DCPU_ONLY)
   endif()
 endif()
 
-if (USE_DLIB)
-    # Dlib
+if(USE_DLIB)
+  # Dlib
 
-    # Currently supported release version of dlib
-    set(DLIB_RELEASE_VERSION v19.24)
-    message(STATUS "Using Dlib version ${DLIB_RELEASE_VERSION}")
-    add_definitions(-DUSE_DLIB)
-    set(DLIB_LIB_DEPS -ldlib -lopenblas)
+  # Currently supported release version of dlib
+  set(DLIB_RELEASE_VERSION v19.24)
+  message(STATUS "Using Dlib version ${DLIB_RELEASE_VERSION}")
+  add_definitions(-DUSE_DLIB)
+  set(DLIB_LIB_DEPS -ldlib -lopenblas)
 
-    if (USE_DLIB_CPU_ONLY)
-        ExternalProject_Add(
-            dlib
-            PREFIX dlib
-            URL https://github.com/davisking/dlib/archive/${DLIB_RELEASE_VERSION}.tar.gz
-            CONFIGURE_COMMAND cd dlib && mkdir -p build && cd build && cmake .. -DUSE_AVX_INSTRUCTIONS=${USE_DLIB_AVX} -DDLIB_NO_GUI_SUPPORT=ON -DDLIB_USE_CUDA=OFF -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/dlib/build && cmake --build . --config Release --target install
-            BUILD_COMMAND ""
-            INSTALL_COMMAND ""
-            BUILD_IN_SOURCE 1
-        )
-    else()
-        if (NOT USE_CUDNN)
-            message(FATAL_ERROR "Dlib with CUDA must also enable cuDNN. Use -DUSE_CUDNN=ON")
-        endif()
-        ExternalProject_Add(
-          dlib
-          PREFIX dlib
-          URL https://github.com/davisking/dlib/archive/${DLIB_RELEASE_VERSION}.tar.gz
-          CONFIGURE_COMMAND cd dlib && mkdir -p build && cd build && cmake .. -DUSE_AVX_INSTRUCTIONS=${USE_DLIB_AVX} -DDLIB_NO_GUI_SUPPORT=ON -DDLIB_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/dlib/build && cmake --build . --config Release --target install
-          BUILD_COMMAND ""
-          INSTALL_COMMAND ""
-          BUILD_IN_SOURCE 1
-        )
+  if(USE_DLIB_CPU_ONLY)
+    ExternalProject_Add(
+      dlib
+      PREFIX dlib
+      URL https://github.com/davisking/dlib/archive/${DLIB_RELEASE_VERSION}.tar.gz
+      CONFIGURE_COMMAND
+        cd dlib && mkdir -p build && cd build && cmake ..
+        -DUSE_AVX_INSTRUCTIONS=${USE_DLIB_AVX} -DDLIB_NO_GUI_SUPPORT=ON
+        -DDLIB_USE_CUDA=OFF
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/dlib/build && cmake --build .
+        --config Release --target install
+      BUILD_COMMAND ""
+      INSTALL_COMMAND ""
+      BUILD_IN_SOURCE 1)
+  else()
+    if(NOT USE_CUDNN)
+      message(
+        FATAL_ERROR "Dlib with CUDA must also enable cuDNN. Use -DUSE_CUDNN=ON")
     endif()
-    set(DLIB_INC_DIR ${CMAKE_BINARY_DIR}/dlib/build/include)
-    set(DLIB_LIB_DIR ${CMAKE_BINARY_DIR}/dlib/build/lib)
-    include_directories("${DLIB_INC_DIR}")
-    message(STATUS "Dlib will be built")
+    ExternalProject_Add(
+      dlib
+      PREFIX dlib
+      URL https://github.com/davisking/dlib/archive/${DLIB_RELEASE_VERSION}.tar.gz
+      CONFIGURE_COMMAND
+        cd dlib && mkdir -p build && cd build && cmake ..
+        -DUSE_AVX_INSTRUCTIONS=${USE_DLIB_AVX} -DDLIB_NO_GUI_SUPPORT=ON
+        -DDLIB_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/dlib/build
+        && cmake --build . --config Release --target install
+      BUILD_COMMAND ""
+      INSTALL_COMMAND ""
+      BUILD_IN_SOURCE 1)
+  endif()
+  set(DLIB_INC_DIR ${CMAKE_BINARY_DIR}/dlib/build/include)
+  set(DLIB_LIB_DIR ${CMAKE_BINARY_DIR}/dlib/build/lib)
+  include_directories("${DLIB_INC_DIR}")
+  message(STATUS "Dlib will be built")
 endif()
 
 set(CAFFE_DD_USER jolibrain)
 set(CAFFE_DD_BRANCH master)
 
-if (USE_CAFFE2)
+if(USE_CAFFE2)
 
-  message(DEPRECATION "CAFFE2 backend is deprecated and will be removed in the future")
+  message(
+    DEPRECATION "CAFFE2 backend is deprecated and will be removed in the future"
+  )
 
   add_definitions(-DUSE_CAFFE2)
   list(APPEND CAFFE2_LIB_DEPS -lcaffe2)
-  if (NOT USE_CAFFE2_CPU_ONLY)
+  if(NOT USE_CAFFE2_CPU_ONLY)
     list(APPEND CAFFE2_LIB_DEPS -lcaffe2_gpu)
   endif()
 
-  include_directories(
-    ${PYTORCH_PATH}
-    ${PYTORCH_PATH}-build
-    ${PYTORCH_PATH}/aten/src
-  )
+  include_directories(${PYTORCH_PATH} ${PYTORCH_PATH}-build
+                      ${PYTORCH_PATH}/aten/src)
   set(CAFFE2_PATCHES ${CMAKE_BINARY_DIR}/patches/caffe2)
 
   set(PYTORCH_SUPPORTED_COMMIT ff608a9) # Pre-release v1.0rc1
   set(PYTORCH_PATCHES
-    ${CAFFE2_PATCHES}/pytorch/0001-eigen.patch
-    ${CAFFE2_PATCHES}/pytorch/0002-logging.patch
-    ${CAFFE2_PATCHES}/pytorch/0003-collect_proposals.patch
-    )
+      ${CAFFE2_PATCHES}/pytorch/0001-eigen.patch
+      ${CAFFE2_PATCHES}/pytorch/0002-logging.patch
+      ${CAFFE2_PATCHES}/pytorch/0003-collect_proposals.patch)
 
   set(DETECTRON_SUPPORTED_COMMIT 8181a32) # Nov 7, 2018
   set(DETECTRON_PATCHES
-    ${CAFFE2_PATCHES}/detectron/0001-dependencies.patch
-    ${CAFFE2_PATCHES}/detectron/0002-compiled.patch
-    ${CAFFE2_PATCHES}/detectron/0003-ops.patch
-    ${CAFFE2_PATCHES}/detectron/0004-import.patch
-    ${CAFFE2_PATCHES}/detectron/0005-visual_genome.patch
-    ${CAFFE2_PATCHES}/detectron/0006-pkl_cache.patch
-    ${CAFFE2_PATCHES}/detectron/0007-weight_transfer.patch
-    )
+      ${CAFFE2_PATCHES}/detectron/0001-dependencies.patch
+      ${CAFFE2_PATCHES}/detectron/0002-compiled.patch
+      ${CAFFE2_PATCHES}/detectron/0003-ops.patch
+      ${CAFFE2_PATCHES}/detectron/0004-import.patch
+      ${CAFFE2_PATCHES}/detectron/0005-visual_genome.patch
+      ${CAFFE2_PATCHES}/detectron/0006-pkl_cache.patch
+      ${CAFFE2_PATCHES}/detectron/0007-weight_transfer.patch)
 
-  list(APPEND CAFFE2_OPS
+  list(
+    APPEND
+    CAFFE2_OPS
     ${CAFFE2_PATCHES}/custom_ops/bbox_to_roi_op.h
     ${CAFFE2_PATCHES}/custom_ops/bbox_to_roi_op.cc
     ${CAFFE2_PATCHES}/custom_ops/segment_mask_op.h
     ${CAFFE2_PATCHES}/custom_ops/segment_mask_op.cc
     ${CAFFE2_PATCHES}/custom_ops/multi_level_roi_op.h
-    ${CAFFE2_PATCHES}/custom_ops/multi_level_roi_op.cc
-  )
+    ${CAFFE2_PATCHES}/custom_ops/multi_level_roi_op.cc)
 
-  list(APPEND PYTORCH_FLAGS
-
+  list(
+    APPEND
+    PYTORCH_FLAGS
     -DBUILD_CUSTOM_PROTOBUF=OFF
     -DCAFFE2_LINK_LOCAL_PROTOBUF=0
-
     -DUSE_OPENMP=ON
     -DUSE_MPI=OFF
-
     -DUSE_GFLAGS=OFF
     -DUSE_GLOG=OFF
-
     -DBUILD_TEST=OFF
     -DBUILD_BINARY=OFF
-    -DBUILD_DOCS=OFF
-  )
+    -DBUILD_DOCS=OFF)
 
-  # Only a few submodules are currently used by caffe2
-  # (No need to log, benchmark, compile for IOS, make python libraries, ...)
-  list(APPEND PYTORCH_SUBMODULES
+  # Only a few submodules are currently used by caffe2 (No need to log,
+  # benchmark, compile for IOS, make python libraries, ...)
+  list(
+    APPEND
+    PYTORCH_SUBMODULES
     third_party/cpuinfo
     third_party/cub
     third_party/eigen
@@ -577,8 +602,7 @@ if (USE_CAFFE2)
     third_party/pthreadpool
     third_party/pybind11
     third_party/python-peachpy
-    third_party/sleef
-    )
+    third_party/sleef)
 
   # Pytorch
   set(PYTORCH_COMPLETE ${CMAKE_BINARY_DIR}/CMakeFiles/pytorch-complete)
@@ -589,12 +613,16 @@ if (USE_CAFFE2)
     GIT_SUBMODULES ${PYTORCH_SUBMODULES}
     UPDATE_DISCONNECTED 1
     GIT_TAG ${PYTORCH_SUPPORTED_COMMIT}
-    PATCH_COMMAND test -f ${PYTORCH_COMPLETE} && echo Skipping || echo cp modules/detectron/*_op.* caffe2/operators | bash && cp ${CAFFE2_OPS} caffe2/operators && git am ${PYTORCH_PATCHES}
-    CONFIGURE_COMMAND test -f ${PYTORCH_COMPLETE} && echo Skipping || PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} cmake ../pytorch ${PYTORCH_FLAGS}
+    PATCH_COMMAND
+      test -f ${PYTORCH_COMPLETE} && echo Skipping || echo cp
+      modules/detectron/*_op.* caffe2/operators | bash && cp ${CAFFE2_OPS}
+      caffe2/operators && git am ${PYTORCH_PATCHES}
+    CONFIGURE_COMMAND
+      test -f ${PYTORCH_COMPLETE} && echo Skipping ||
+      PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} cmake ../pytorch ${PYTORCH_FLAGS}
     BUILD_COMMAND test -f ${PYTORCH_COMPLETE} && echo Skipping || make -j${N}
     INSTALL_COMMAND ""
-    DEPENDS protobuf
-  )
+    DEPENDS protobuf)
 
   # Detectron
   set(DETECTRON_COMPLETE ${CMAKE_BINARY_DIR}/CMakeFiles/detectron-complete)
@@ -604,31 +632,31 @@ if (USE_CAFFE2)
     GIT_REPOSITORY https://github.com/facebookresearch/Detectron
     UPDATE_DISCONNECTED 1
     GIT_TAG ${DETECTRON_SUPPORTED_COMMIT}
-    PATCH_COMMAND test -f ${DETECTRON_COMPLETE} && echo Skipping || git am ${DETECTRON_PATCHES}
+    PATCH_COMMAND test -f ${DETECTRON_COMPLETE} && echo Skipping || git am
+                  ${DETECTRON_PATCHES}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
-    DEPENDS protobuf
-  )
+    DEPENDS protobuf)
 
   # Python path
-  if (NOT EXISTS ${CMAKE_BINARY_DIR}/python_path)
+  if(NOT EXISTS ${CMAKE_BINARY_DIR}/python_path)
     execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/python_path)
     execute_process(COMMAND ln -s ${PYTORCH_PATH}-build
-      ${CMAKE_BINARY_DIR}/python_path/pytorch)
+                            ${CMAKE_BINARY_DIR}/python_path/pytorch)
     execute_process(COMMAND ln -s ${DETECTRON_PATH}
-      ${CMAKE_BINARY_DIR}/python_path/detectron)
+                            ${CMAKE_BINARY_DIR}/python_path/detectron)
   endif()
 
 endif()
 
-if (USE_TF)
+if(USE_TF)
   # Tensorflow
   message(STATUS "Fetching Tensorflow")
   add_definitions(-DUSE_TF)
   set(TF_LIB_DEPS -ltensorflow_cc)
 
-  if (USE_TF_CPU_ONLY)
+  if(USE_TF_CPU_ONLY)
     add_definitions(-DUSE_TF_CPU_ONLY)
     ExternalProject_Add(
       tensorflow_cc
@@ -638,8 +666,7 @@ if (USE_TF)
       SOURCE_SUBDIR tensorflow_cc
       CMAKE_ARGS -DTENSORFLOW_STATIC=OFF -DTENSORFLOW_SHARED=ON -DALLOW_CUDA=OFF
       INSTALL_COMMAND ""
-      BUILD_IN_SOURCE 1
-      )
+      BUILD_IN_SOURCE 1)
   else()
     ExternalProject_Add(
       tensorflow_cc
@@ -649,11 +676,15 @@ if (USE_TF)
       SOURCE_SUBDIR tensorflow_cc
       CMAKE_ARGS -DTENSORFLOW_STATIC=OFF -DTENSORFLOW_SHARED=ON
       INSTALL_COMMAND ""
-      BUILD_IN_SOURCE 1
-      )
+      BUILD_IN_SOURCE 1)
   endif()
 
-  set(TF_INC_DIR ${TENSORFLOW_CC_DIR}/tensorflow/ ${TENSORFLOW_CC_DIR}/tensorflow/bazel-genfiles/ ${TENSORFLOW_CC_DIR}/tensorflow/tensorflow/contrib/makefile/downloads/nsync/public/ ${TENSORFLOW_CC_DIR}/tensorflow/tensorflow/contrib/makefile/downloads/absl/)
+  set(TF_INC_DIR
+      ${TENSORFLOW_CC_DIR}/tensorflow/
+      ${TENSORFLOW_CC_DIR}/tensorflow/bazel-genfiles/
+      ${TENSORFLOW_CC_DIR}/tensorflow/tensorflow/contrib/makefile/downloads/nsync/public/
+      ${TENSORFLOW_CC_DIR}/tensorflow/tensorflow/contrib/makefile/downloads/absl/
+  )
   set(TF_LIB_DIR ${TENSORFLOW_CC_DIR}/tensorflow/bazel-bin/tensorflow/)
 
   include_directories("${TF_INC_DIR}")
@@ -661,68 +692,72 @@ if (USE_TF)
 endif() # USE_TF
 
 # OpenCV
-message(STATUS "OpenCV ${USE_OPENCV_VERSION} REQUIRED COMPONENTS ${OPENCV_MODULES}")
+message(
+  STATUS "OpenCV ${USE_OPENCV_VERSION} REQUIRED COMPONENTS ${OPENCV_MODULES}")
 set(OPENCV_MODULES core imgproc highgui imgcodecs videoio)
-if (USE_CUDA_CV)
+if(USE_CUDA_CV)
   list(APPEND OPENCV_MODULES cudaimgproc cudaarithm cudawarping cudacodec)
 endif()
 
-if (USE_OPENCV_VERSION STREQUAL "")
+if(USE_OPENCV_VERSION STREQUAL "")
   find_package(OpenCV 3 QUIET COMPONENTS ${OPENCV_MODULES})
-  if (NOT OpenCV_FOUND)
+  if(NOT OpenCV_FOUND)
     find_package(OpenCV 4 QUIET COMPONENTS ${OPENCV_MODULES})
   endif()
-  if (NOT OpenCV_FOUND)
+  if(NOT OpenCV_FOUND)
     find_package(OpenCV 2 REQUIRED COMPONENTS ${OPENCV_MODULES})
   endif()
 else()
-  find_package(OpenCV ${USE_OPENCV_VERSION} REQUIRED COMPONENTS ${OPENCV_MODULES})
+  find_package(OpenCV ${USE_OPENCV_VERSION} REQUIRED
+               COMPONENTS ${OPENCV_MODULES})
 endif()
 
 set(OPENCV_VERSION ${OpenCV_VERSION_MAJOR})
 include_directories(${OpenCV_INCLUDE_DIRS})
-message(STATUS "OpenCV ${OPENCV_VERSION} (${OpenCV_VERSION}) found (${OpenCV_CONFIG_PATH})")
+message(
+  STATUS
+    "OpenCV ${OPENCV_VERSION} (${OpenCV_VERSION}) found (${OpenCV_CONFIG_PATH})"
+)
 
-if (USE_CUDA_CV)
+if(USE_CUDA_CV)
   message(STATUS "Using CUDA OpenCV")
   add_definitions(-DUSE_CUDA_CV)
 endif()
 
 # customized Caffe as external project
-if (CAFFE_INC_DIR AND CAFFE_LIB_DIR)
+if(CAFFE_INC_DIR AND CAFFE_LIB_DIR)
   # do nothing
 elseif(USE_CAFFE)
   message(STATUS "Configuring customized caffe")
 
-  if (USE_DD_SYSLOG)
+  if(USE_DD_SYSLOG)
     set(USE_SYSLOG 1)
   else()
     set(USE_SYSLOG 0)
   endif()
 
-
   # Set config file
-  if (USE_CAFFE_CPU_ONLY)
+  if(USE_CAFFE_CPU_ONLY)
     add_definitions(-DUSE_CAFFE_CPU_ONLY)
     set(CAFFE_DD_CONFIG_FILE Makefile.config.cpu)
   else()
-    if (HAVE_CUDNN AND USE_CUDNN)
+    if(HAVE_CUDNN AND USE_CUDNN)
       if(JETSON)
-	set(CAFFE_DD_CONFIG_FILE Makefile.config.gpu.cudnn.jetson)
+        set(CAFFE_DD_CONFIG_FILE Makefile.config.gpu.cudnn.jetson)
       else()
-	set(CAFFE_DD_CONFIG_FILE Makefile.config.gpu.cudnn)
+        set(CAFFE_DD_CONFIG_FILE Makefile.config.gpu.cudnn)
       endif()
     else() # HAVE_CUDNN
       set(CAFFE_DD_CONFIG_FILE Makefile.config.gpu)
     endif() # HAVE_CUDNN
   endif()
 
-  if (RPI3)
+  if(RPI3)
     set(CAFFE_DD_CONFIG_FILE Makefile.config.pi3)
   endif()
 
   # Set caffe DEBUG mode
-  if (USE_CAFFE_DEBUG)
+  if(USE_CAFFE_DEBUG)
     set(CAFFE_DEBUG 1)
   else()
     set(CAFFE_DEBUG 0)
@@ -730,7 +765,8 @@ elseif(USE_CAFFE)
 
   message(STATUS "include_dirs : ${INCLUDE_DIRS}")
 
-  set(CAFFE_DD_TARBALL_HASH "6d340fff2213c37886e058d188c9b54458a0747422d54bc294db4e5029a68aa0")
+  set(CAFFE_DD_TARBALL_HASH
+      "6d340fff2213c37886e058d188c9b54458a0747422d54bc294db4e5029a68aa0")
 
   ExternalProject_Add(
     caffe_dd
@@ -738,139 +774,161 @@ elseif(USE_CAFFE)
     URL https://github.com/${CAFFE_DD_USER}/caffe/archive/${CAFFE_DD_BRANCH}.tar.gz
     URL_HASH SHA256=${CAFFE_DD_TARBALL_HASH}
     CONFIGURE_COMMAND
-        sh -c "\
+      sh -c
+      "\
             diff ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/.build_release/src/caffe/proto/caffe.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/src/caffe.pb.cc > /dev/null 2>&1 \
             && ( echo 'caffe version of caffe.pb.h/caffe.pb.cc is already up to date') \
             || ( echo 'caffe.pb.h/caffe.pb.cc have change rebuilding caffe' && rm -rf ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/.build_release ) \
-        " &&
-        ln -sf ${CAFFE_DD_CONFIG_FILE} Makefile.config &&
-        echo "OPENCV_VERSION:=${OPENCV_VERSION}" >> Makefile.config &&
-        echo "USE_SYSLOG:=${USE_SYSLOG}" >> Makefile.config &&
-        echo "DEBUG:=${CAFFE_DEBUG}" >> Makefile.config &&
-        echo "INCLUDE_DIRS+=${SPDLOG_INCLUDE_DIR}" >> Makefile.config &&
-        echo "INCLUDE_DIRS+=${PROTOBUF_INCLUDE_DIR}" >> Makefile.config &&
-        echo "INCLUDE_DIRS+=${OpenCV_INCLUDE_DIRS}" >> Makefile.config &&
-        echo "CUDA_ARCH:=${CUDA_ARCH_FLAGS}" >> Makefile.config &&
-        echo "LIBRARIES+=${SPDLOG_CAFFE_LIB_DEPS}" >> Makefile.config &&
-        echo "LIBRARIES+=${OpenCV_LIBS}" >> Makefile.config &&
-        echo "LIBRARY_DIRS+=${SPDLOG_LIB_DIR}" >> Makefile.config &&
-        echo "LIBRARY_DIRS+=${PROTOBUF_LIB_DIR}" >> Makefile.config &&
-        echo "LIBRARY_DIRS+=${OpenCV_CONFIG_PATH}/lib" >> Makefile.config
-    BUILD_COMMAND 
-        ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR}:$ENV{LD_LIBRARY_PATH} PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} make -j${N} proto &&
-        ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR}:$ENV{LD_LIBRARY_PATH} PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} make -j${N} all
+        " && ln -sf ${CAFFE_DD_CONFIG_FILE} Makefile.config && echo
+      "OPENCV_VERSION:=${OPENCV_VERSION}" >> Makefile.config && echo
+      "USE_SYSLOG:=${USE_SYSLOG}" >> Makefile.config && echo
+      "DEBUG:=${CAFFE_DEBUG}" >> Makefile.config && echo
+      "INCLUDE_DIRS+=${SPDLOG_INCLUDE_DIR}" >> Makefile.config && echo
+      "INCLUDE_DIRS+=${PROTOBUF_INCLUDE_DIR}" >> Makefile.config && echo
+      "INCLUDE_DIRS+=${OpenCV_INCLUDE_DIRS}" >> Makefile.config && echo
+      "CUDA_ARCH:=${CUDA_ARCH_FLAGS}" >> Makefile.config && echo
+      "LIBRARIES+=${SPDLOG_CAFFE_LIB_DEPS}" >> Makefile.config && echo
+      "LIBRARIES+=${OpenCV_LIBS}" >> Makefile.config && echo
+      "LIBRARY_DIRS+=${SPDLOG_LIB_DIR}" >> Makefile.config && echo
+      "LIBRARY_DIRS+=${PROTOBUF_LIB_DIR}" >> Makefile.config && echo
+      "LIBRARY_DIRS+=${OpenCV_CONFIG_PATH}/lib" >> Makefile.config
+    BUILD_COMMAND
+      ${CMAKE_COMMAND} -E env
+      LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR}:$ENV{LD_LIBRARY_PATH}
+      PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} make -j${N} proto && ${CMAKE_COMMAND}
+      -E env LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR}:$ENV{LD_LIBRARY_PATH}
+      PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} make -j${N} all
     INSTALL_COMMAND ""
     BUILD_IN_SOURCE 1
-    DEPENDS caffe_pb_h protobuf spdlog
-  )
+    DEPENDS caffe_pb_h protobuf spdlog)
 
-  if (USE_HDF5)
-    if (JETSON)
+  if(USE_HDF5)
+    if(JETSON)
       set(HDF5_LIB /usr/lib/aarch64-linux-gnu/hdf5/serial)
-    elseif (RPI3)
+    elseif(RPI3)
       set(HDF5_LIB /usr/lib/arm-linux-gnueabihf/hdf5/serial)
     else()
       set(HDF5_LIB /usr/lib/x86_64-linux-gnu/hdf5/serial)
     endif()
   endif()
 
-  if (USE_HDF5)
-    if (USE_CAFFE_CPU_ONLY)
-      set(CAFFE_INC_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src /usr/include/hdf5/serial)
-      set(CAFFE_LIB_DIR $ENV{HOME}/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src ${HDF5_LIB})
+  if(USE_HDF5)
+    if(USE_CAFFE_CPU_ONLY)
+      set(CAFFE_INC_DIR
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src
+          /usr/include/hdf5/serial)
+      set(CAFFE_LIB_DIR
+          $ENV{HOME}/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src ${HDF5_LIB})
     else()
-      set(CAFFE_INC_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src ${CUDA_INCLUDE_DIRS})
-      set(CAFFE_LIB_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src ${HDF5_LIB})
+      set(CAFFE_INC_DIR
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src
+          ${CUDA_INCLUDE_DIRS})
+      set(CAFFE_LIB_DIR
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src ${HDF5_LIB})
     endif()
   else()
-    if (USE_CAFFE_CPU_ONLY)
-      set(CAFFE_INC_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src)
-      set(CAFFE_LIB_DIR $ENV{HOME}/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src)
+    if(USE_CAFFE_CPU_ONLY)
+      set(CAFFE_INC_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include
+                        ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src)
+      set(CAFFE_LIB_DIR
+          $ENV{HOME}/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src)
     else()
-      set(CAFFE_INC_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src ${CUDA_INCLUDE_DIRS})
-      set(CAFFE_LIB_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src)
+      set(CAFFE_INC_DIR
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/include
+          ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src
+          ${CUDA_INCLUDE_DIRS})
+      set(CAFFE_LIB_DIR ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/lib
+                        ${CMAKE_BINARY_DIR}/caffe_dd/src/caffe_dd/build/src)
     endif()
   endif()
 endif()
 
 # Caffe dependencies
-if (USE_CAFFE)
+if(USE_CAFFE)
   set(CAFFE_LIB_DEPS -lleveldb -lsnappy -llmdb -lopenblas -lcaffe)
-  if (USE_HDF5)
+  if(USE_HDF5)
     string(APPEND CAFFE_LIB_DEPS " -lhdf5_hl -lhdf5")
   endif()
 endif()
 
 # NCNN
-if (USE_NCNN)
+if(USE_NCNN)
   message(STATUS "Configuring NCNN")
   add_definitions(-DUSE_NCNN)
 
   set(NCNN_PATCHES_PATH ${CMAKE_BINARY_DIR}/patches/ncnn)
   set(NCNN_PATCHES
-    ${NCNN_PATCHES_PATH}/ncnn_inner_keep_h.patch
-    ${NCNN_PATCHES_PATH}/ncnn_lstm_cont.patch
-    ${NCNN_PATCHES_PATH}/ncnn_variable_h.patch
-    ${NCNN_PATCHES_PATH}/ncnn_flatten_axis.patch
-    ${NCNN_PATCHES_PATH}/ncnn_cont_indic.patch
-    )
+      ${NCNN_PATCHES_PATH}/ncnn_inner_keep_h.patch
+      ${NCNN_PATCHES_PATH}/ncnn_lstm_cont.patch
+      ${NCNN_PATCHES_PATH}/ncnn_variable_h.patch
+      ${NCNN_PATCHES_PATH}/ncnn_flatten_axis.patch
+      ${NCNN_PATCHES_PATH}/ncnn_cont_indic.patch)
 
   set(NCNN_VERSION "20201218")
-  set(NCNN_TARBALL_HASH "1dac4571168b83ee99efaba969c01e8054cd8e3d9b67ca4893f32b767ab4ec48")
-  set(NCNN_BUILD_FLAGS -DCMAKE_BUILD_TYPE=Release -DNCNN_BUILD_EXAMPLES=OFF -DNCNN_BUILD_BENCHMARK=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_TESTS=OFF)
+  set(NCNN_TARBALL_HASH
+      "1dac4571168b83ee99efaba969c01e8054cd8e3d9b67ca4893f32b767ab4ec48")
+  set(NCNN_BUILD_FLAGS
+      -DCMAKE_BUILD_TYPE=Release -DNCNN_BUILD_EXAMPLES=OFF
+      -DNCNN_BUILD_BENCHMARK=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_TESTS=OFF)
 
-  if (RPI3)
+  if(RPI3)
     ExternalProject_Add(
       ncnn
       PREFIX ncnn
       URL https://github.com/Tencent/ncnn/releases/download/${NCNN_VERSION}/ncnn-${NCNN_VERSION}-full-source.zip
       URL_HASH SHA256=${NCNN_TARBALL_HASH}
       PATCH_COMMAND ${CMAKE_SOURCE_DIR}/cmake/patches-apply.sh ${NCNN_PATCHES}
-      CMAKE_ARGS -DPI3=ON -DCMAKE_TOOLCHAIN_FILE=../toolchains/pi3.toolchain.cmake ${NCNN_BUILD_FLAGS}
-      INSTALL_COMMAND ""
-    )
-  else ()
+      CMAKE_ARGS -DPI3=ON
+                 -DCMAKE_TOOLCHAIN_FILE=../toolchains/pi3.toolchain.cmake
+                 ${NCNN_BUILD_FLAGS}
+      INSTALL_COMMAND "")
+  else()
     ExternalProject_Add(
       ncnn
       PREFIX ncnn
       URL https://github.com/Tencent/ncnn/releases/download/${NCNN_VERSION}/ncnn-${NCNN_VERSION}-full-source.zip
       URL_HASH SHA256=${NCNN_TARBALL_HASH}
-      PATCH_COMMAND  ${CMAKE_SOURCE_DIR}/cmake/patches-apply.sh ${NCNN_PATCHES}
+      PATCH_COMMAND ${CMAKE_SOURCE_DIR}/cmake/patches-apply.sh ${NCNN_PATCHES}
       CMAKE_ARGS ${NCNN_BUILD_FLAGS}
-      INSTALL_COMMAND ""
-      )
+      INSTALL_COMMAND "")
   endif()
 
   set(NCNN_LIB_DEPS ${CMAKE_BINARY_DIR}/ncnn/src/ncnn-build/src/libncnn.a)
-  set(NCNN_INC_DIR ${CMAKE_BINARY_DIR}/ncnn/src/ncnn/src ${CMAKE_BINARY_DIR}/ncnn/src/ncnn-build/src)
+  set(NCNN_INC_DIR ${CMAKE_BINARY_DIR}/ncnn/src/ncnn/src
+                   ${CMAKE_BINARY_DIR}/ncnn/src/ncnn-build/src)
   set(NCNN_LIB_DIR ${CMAKE_BINARY_DIR}/ncnn/src/ncnn-build/src)
 endif()
 
 # Torch
-if (USE_TORCH)
-  if (!APPLE)
+if(USE_TORCH)
+  if(!APPLE)
     set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed")
   endif()
 
   set(PYTORCH_PATCHES_PATH ${CMAKE_BINARY_DIR}/patches/pytorch)
 
   set(PYTORCH_PATCHES
-    ${PYTORCH_PATCHES_PATH}/pytorch_15_compile.patch
-    ${PYTORCH_PATCHES_PATH}/pytorch_113_new_logger.patch
-    ${PYTORCH_PATCHES_PATH}/pytorch_19_use_new_logger.patch
-  )
-  if (APPLE)
-    list(APPEND PYTORCH_PATCHES ${PYTORCH_PATCHES_PATH}/pytorch_113_apple_includes.patch)
+      ${PYTORCH_PATCHES_PATH}/pytorch_15_compile.patch
+      ${PYTORCH_PATCHES_PATH}/pytorch_113_new_logger.patch
+      ${PYTORCH_PATCHES_PATH}/pytorch_19_use_new_logger.patch)
+  if(APPLE)
+    list(APPEND PYTORCH_PATCHES
+         ${PYTORCH_PATCHES_PATH}/pytorch_113_apple_includes.patch)
   endif()
 
   message(STATUS "Configuring libtorch")
   add_definitions(-DUSE_TORCH)
 
-  if (NOT TORCH_LOCATION)
+  if(NOT TORCH_LOCATION)
     set(PYTORCH_COMMIT v2.1.2)
     set(PYTORCH_COMPLETE ${CMAKE_BINARY_DIR}/CMakeFiles/pytorch-complete)
 
-    if (APPLE)
+    if(APPLE)
       if(USE_TORCH_CPU_ONLY)
         set(PYTORCH_USE_MPS 0)
       else()
@@ -878,7 +936,10 @@ if (USE_TORCH)
         add_definitions("-DUSE_MPS")
       endif()
 
-      message(STATUS "PROTOBUF_PROTOC_EXECUTABLE=${PROTOBUF_PROTOC} PROTOBUF_INCLUDE_DIRS=${PROTOBUF_INCLUDE_DIR} PROTOBUF_LIBRARIES=${PROTOBUF_LIB_DEPS}")
+      message(
+        STATUS
+          "PROTOBUF_PROTOC_EXECUTABLE=${PROTOBUF_PROTOC} PROTOBUF_INCLUDE_DIRS=${PROTOBUF_INCLUDE_DIR} PROTOBUF_LIBRARIES=${PROTOBUF_LIB_DEPS}"
+      )
       ExternalProject_Add(
         pytorch
         PREFIX pytorch
@@ -886,14 +947,26 @@ if (USE_TORCH)
         GIT_TAG ${PYTORCH_COMMIT}
         GIT_CONFIG advice.detachedHead=false
         UPDATE_DISCONNECTED 1
-        PATCH_COMMAND "" test -f ${PYTORCH_COMPLETE} && echo Skipping || git apply ${PYTORCH_PATCHES} && echo Applying ${PYTORCH_PATCHES}
-        CONFIGURE_COMMAND "" cd ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/third_party/fmt/ && git checkout 7.1.0
+        PATCH_COMMAND
+          "" test -f ${PYTORCH_COMPLETE} && echo Skipping || git apply
+          ${PYTORCH_PATCHES} && echo Applying ${PYTORCH_PATCHES}
+        CONFIGURE_COMMAND
+          "" cd ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/third_party/fmt/ && git
+          checkout 7.1.0
         BUILD_COMMAND ""
-        COMMAND test -f ${PYTORCH_COMPLETE} && echo Skipping || ${CMAKE_COMMAND} -E env PATH=${PROTOBUF_LIB_DIR}:${PROTOBUF_INCLUDE_DIR}:$ENV{PATH} BUILD_CUSTOM_PROTOBUF=0 BUILD_TEST=0 USE_MPS=${PYTORCH_USE_MPS} USE_DDLOG=1 USE_TENSORRT=0 "CMAKE_CXX_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}" "CMAKE_CUDA_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}" CMAKE_PREFIX_PATH="${PROTOBUF_LIB_DIR}/cmake" MAX_JOBS=8 python3 ../pytorch/tools/build_libtorch.py
+        COMMAND
+          test -f ${PYTORCH_COMPLETE} && echo Skipping || ${CMAKE_COMMAND} -E
+          env PATH=${PROTOBUF_LIB_DIR}:${PROTOBUF_INCLUDE_DIR}:$ENV{PATH}
+          BUILD_CUSTOM_PROTOBUF=0 BUILD_TEST=0 USE_MPS=${PYTORCH_USE_MPS}
+          USE_DDLOG=1 USE_TENSORRT=0
+          "CMAKE_CXX_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}"
+          "CMAKE_CUDA_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}"
+          CMAKE_PREFIX_PATH="${PROTOBUF_LIB_DIR}/cmake" MAX_JOBS=8 python3
+          ../pytorch/tools/build_libtorch.py
         INSTALL_COMMAND ""
-        DEPENDS spdlog protobuf
-      )
-      set(TORCH_BINARY_LOCATION ${CMAKE_BINARY_DIR}/pytorch/src/pytorch-build/build)
+        DEPENDS spdlog protobuf)
+      set(TORCH_BINARY_LOCATION
+          ${CMAKE_BINARY_DIR}/pytorch/src/pytorch-build/build)
     else()
       if(USE_TORCH_CPU_ONLY)
         set(PYTORCH_USE_CUDA 0)
@@ -901,7 +974,10 @@ if (USE_TORCH)
         set(PYTORCH_USE_CUDA 1)
       endif()
 
-      file(WRITE ${CMAKE_BINARY_DIR}/build_pytorch.sh "set -x\n${CMAKE_COMMAND} -E env PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} BUILD_CUSTOM_PROTOBUF=0 GLIBCXX_USE_CXX11_ABI=1 BUILD_TEST=0 USE_CUDA=${PYTORCH_USE_CUDA}  BUILD_CAFFE2=1 BUILD_CAFFE2_OPS=1 BUILD_CAFFE2_MOBILE=0 USE_DDLOG=1 USE_TENSORRT=0 CAFFE2_LINK_LOCAL_PROTOBUF=0 \"CMAKE_CXX_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" \"CMAKE_CUDA_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" TORCH_CUDA_ARCH_LIST=\"${CUDA_ARCH}\" \"CMAKE_CUDA_COMPILER=/usr/local/cuda-12.3/bin/nvcc\" CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12.3 CUDA_PATH=/usr/local/cuda-12.3 CMAKE_PREFIX_PATH=${PROTOBUF_LIB_DIR}/cmake MAX_JOBS=8 python3 ../pytorch/tools/build_libtorch.py")
+      file(
+        WRITE ${CMAKE_BINARY_DIR}/build_pytorch.sh
+        "set -x\n${CMAKE_COMMAND} -E env PATH=${PROTOBUF_LIB_DIR}:$ENV{PATH} BUILD_CUSTOM_PROTOBUF=0 GLIBCXX_USE_CXX11_ABI=1 BUILD_TEST=0 USE_CUDA=${PYTORCH_USE_CUDA}  BUILD_CAFFE2=1 BUILD_CAFFE2_OPS=1 BUILD_CAFFE2_MOBILE=0 USE_DDLOG=1 USE_TENSORRT=0 CAFFE2_LINK_LOCAL_PROTOBUF=0 \"CMAKE_CXX_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" \"CMAKE_CUDA_FLAGS=-isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" TORCH_CUDA_ARCH_LIST=\"${CUDA_ARCH}\" \"CMAKE_CUDA_COMPILER=/usr/local/cuda-12.3/bin/nvcc\" CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12.3 CUDA_PATH=/usr/local/cuda-12.3 CMAKE_PREFIX_PATH=${PROTOBUF_LIB_DIR}/cmake MAX_JOBS=8 python3 ../pytorch/tools/build_libtorch.py"
+      )
       ExternalProject_Add(
         pytorch
         PREFIX pytorch
@@ -909,44 +985,65 @@ if (USE_TORCH)
         GIT_TAG ${PYTORCH_COMMIT}
         GIT_CONFIG advice.detachedHead=false
         UPDATE_DISCONNECTED 1
-        PATCH_COMMAND "" test -f ${PYTORCH_COMPLETE} && echo Skipping || git apply ${PYTORCH_PATCHES} && echo Applying ${PYTORCH_PATCHES}
-        CONFIGURE_COMMAND "" cd ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/third_party/fmt/ && git checkout 7.1.0
+        PATCH_COMMAND
+          "" test -f ${PYTORCH_COMPLETE} && echo Skipping || git apply
+          ${PYTORCH_PATCHES} && echo Applying ${PYTORCH_PATCHES}
+        CONFIGURE_COMMAND
+          "" cd ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/third_party/fmt/ && git
+          checkout 7.1.0
         BUILD_COMMAND ""
-        COMMAND test -f ${PYTORCH_COMPLETE} && echo Skipping || sh ${CMAKE_BINARY_DIR}/build_pytorch.sh
+        COMMAND test -f ${PYTORCH_COMPLETE} && echo Skipping || sh
+                ${CMAKE_BINARY_DIR}/build_pytorch.sh
         INSTALL_COMMAND ""
-        DEPENDS spdlog protobuf
-      )
+        DEPENDS spdlog protobuf)
     endif()
     set(TORCH_LOCATION ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/torch)
   endif()
 
-  if (APPLE)
-    set(TORCH_LIB_DEPS ${TORCH_BINARY_LOCATION}/lib/libtorch.dylib ${TORCH_BINARY_LOCATION}/lib/libtorch_cpu.dylib ${TORCH_BINARY_LOCATION}/lib/libc10.dylib ${TORCH_BINARY_LOCATION}/lib/libtorch_global_deps.dylib -llmdb)
+  if(APPLE)
+    set(TORCH_LIB_DEPS
+        ${TORCH_BINARY_LOCATION}/lib/libtorch.dylib
+        ${TORCH_BINARY_LOCATION}/lib/libtorch_cpu.dylib
+        ${TORCH_BINARY_LOCATION}/lib/libc10.dylib
+        ${TORCH_BINARY_LOCATION}/lib/libtorch_global_deps.dylib
+        -llmdb)
   else()
-    set(TORCH_LIB_DEPS ${TORCH_LOCATION}/lib/libtorch.so ${TORCH_LOCATION}/lib/libtorch_cpu.so ${TORCH_LOCATION}/lib/libc10.so -llmdb)
+    set(TORCH_LIB_DEPS
+        ${TORCH_LOCATION}/lib/libtorch.so ${TORCH_LOCATION}/lib/libtorch_cpu.so
+        ${TORCH_LOCATION}/lib/libc10.so -llmdb)
 
-    if (USE_TORCH_CPU_ONLY)
+    if(USE_TORCH_CPU_ONLY)
       list(APPEND TORCH_LIB_DEPS iomp5)
     else()
-      list(APPEND TORCH_LIB_DEPS ${TORCH_LOCATION}/lib/libc10_cuda.so ${TORCH_LOCATION}/lib/libtorch_cuda.so)
+      list(APPEND TORCH_LIB_DEPS ${TORCH_LOCATION}/lib/libc10_cuda.so
+           ${TORCH_LOCATION}/lib/libtorch_cuda.so)
     endif()
   endif()
 
-  set(TORCH_INC_DIR ${TORCH_LOCATION}/include/ ${TORCH_LOCATION}/include/torch/csrc/api/include/ ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/torch/include/torch/csrc/api/include ${TORCH_LOCATION}/.. ${CMAKE_BINARY_DIR}/src)
+  set(TORCH_INC_DIR
+      ${TORCH_LOCATION}/include/
+      ${TORCH_LOCATION}/include/torch/csrc/api/include/
+      ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/torch/include/torch/csrc/api/include
+      ${TORCH_LOCATION}/..
+      ${CMAKE_BINARY_DIR}/src)
   set(TORCH_LIB_DIR ${TORCH_LOCATION}/lib/)
 
   # TORCH VISION
   message(STATUS "Configuring Pytorch Vision")
   set(PYTORCH_VISION_COMMIT "v0.16.2") # 0.16.2 & torch 2.1.2
   set(PYTORCH_VISION_PATCHES_PATH ${CMAKE_BINARY_DIR}/patches/pytorch/vision)
-  # set(PYTORCH_VISION_PATCHES
-  #   ${PYTORCH_VISION_PATCHES_PATH}/xxx.patch # add patches here
-  # )
+  # set(PYTORCH_VISION_PATCHES ${PYTORCH_VISION_PATCHES_PATH}/xxx.patch # add
+  # patches here )
 
-  set(PYTORCH_VISION_COMPLETE ${CMAKE_BINARY_DIR}/CMakeFiles/pytorch_vision-complete)
-  set(TORCHVISION_LOCATION "${CMAKE_BINARY_DIR}/pytorch_vision/src/pytorch_vision-install")
+  set(PYTORCH_VISION_COMPLETE
+      ${CMAKE_BINARY_DIR}/CMakeFiles/pytorch_vision-complete)
+  set(TORCHVISION_LOCATION
+      "${CMAKE_BINARY_DIR}/pytorch_vision/src/pytorch_vision-install")
 
-  file(WRITE ${CMAKE_BINARY_DIR}/build_pytorch_vision.sh "sh ${CMAKE_SOURCE_DIR}/cmake/build_external.sh PYTORCH_VISION ${CMAKE_BINARY_DIR}/pytorch_vision ${PYTORCH_VISION_COMPLETE} src/pytorch_vision src/pytorch_vision-build ${N} \"install\" ${CMAKE_COMMAND} ${PYTORCH_VISION_FLAGS} -DWITH_CUDA=${PYTORCH_USE_CUDA} -DCMAKE_PREFIX_PATH=${TORCH_LOCATION} -DCMAKE_INSTALL_PREFIX=${TORCHVISION_LOCATION} -DCMAKE_INCLUDE_PATH=${PROTOBUF_INCLUDE_DIR} -DCMAKE_LIBRARY_PATH=${PROTOBUF_LIB_DIR} \"-DCMAKE_CXX_FLAGS=-isystem ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/ -isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" \"-DCMAKE_CUDA_FLAGS=-isystem ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/ -isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" \"-DCMAKE_CUDA_STANDARD=17\" \"-DTORCH_CUDA_ARCH_LIST=${CUDA_ARCH}\" -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.3/bin/nvcc \"-DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12.3\" \"CUDA_PATH=/usr/local/cuda-12.3\"")
+  file(
+    WRITE ${CMAKE_BINARY_DIR}/build_pytorch_vision.sh
+    "sh ${CMAKE_SOURCE_DIR}/cmake/build_external.sh PYTORCH_VISION ${CMAKE_BINARY_DIR}/pytorch_vision ${PYTORCH_VISION_COMPLETE} src/pytorch_vision src/pytorch_vision-build ${N} \"install\" ${CMAKE_COMMAND} ${PYTORCH_VISION_FLAGS} -DWITH_CUDA=${PYTORCH_USE_CUDA} -DCMAKE_PREFIX_PATH=${TORCH_LOCATION} -DCMAKE_INSTALL_PREFIX=${TORCHVISION_LOCATION} -DCMAKE_INCLUDE_PATH=${PROTOBUF_INCLUDE_DIR} -DCMAKE_LIBRARY_PATH=${PROTOBUF_LIB_DIR} \"-DCMAKE_CXX_FLAGS=-isystem ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/ -isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" \"-DCMAKE_CUDA_FLAGS=-isystem ${CMAKE_BINARY_DIR}/pytorch/src/pytorch/ -isystem ${SPDLOG_INCLUDE_DIR} -isystem ${PROTOBUF_INCLUDE_DIR}\" \"-DCMAKE_CUDA_STANDARD=17\" \"-DTORCH_CUDA_ARCH_LIST=${CUDA_ARCH}\" -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.3/bin/nvcc \"-DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12.3\" \"CUDA_PATH=/usr/local/cuda-12.3\""
+  )
 
   ExternalProject_Add(
     pytorch_vision
@@ -955,12 +1052,13 @@ if (USE_TORCH)
     GIT_TAG ${PYTORCH_VISION_COMMIT}
     GIT_CONFIG advice.detachedHead=false
     UPDATE_DISCONNECTED 1
-    PATCH_COMMAND "" #test -f ${PYTORCH_VISION_COMPLETE} && echo Skipping || git apply ${PYTORCH_VISION_PATCHES} && echo Applying ${PYTORCH_VISION_PATCHES}
+    PATCH_COMMAND
+      "" # test -f ${PYTORCH_VISION_COMPLETE} && echo Skipping || git apply
+         # ${PYTORCH_VISION_PATCHES} && echo Applying ${PYTORCH_VISION_PATCHES}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND sh ${CMAKE_BINARY_DIR}/build_pytorch_vision.sh
     INSTALL_COMMAND ""
-    DEPENDS protobuf pytorch
-  )
+    DEPENDS protobuf pytorch)
 
   list(APPEND TORCH_INC_DIR "${TORCHVISION_LOCATION}/include/")
   list(APPEND TORCH_LIB_DIR "${TORCHVISION_LOCATION}/lib/")
@@ -968,23 +1066,32 @@ if (USE_TORCH)
 endif()
 
 # XGBoost
-if (USE_XGBOOST)
+if(USE_XGBOOST)
   message(STATUS "Configuring XGBoost")
   add_definitions(-DUSE_XGBOOST)
-  set(XGBOOST_LIB_DEPS -Wl,--whole-archive ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/libxgboost.a -Wl,--no-whole-archive ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/dmlc-core/libdmlc.a ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/librabit.a)
+  set(XGBOOST_LIB_DEPS
+      -Wl,--whole-archive
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/libxgboost.a
+      -Wl,--no-whole-archive
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/dmlc-core/libdmlc.a
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/librabit.a)
 
-  if (NOT USE_XGBOOST_CPU_ONLY)
+  if(NOT USE_XGBOOST_CPU_ONLY)
     add_definitions(-DUSE_XGBOOST_GPU)
-    list(APPEND XGBOOST_LIB_DEPS ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/build/CMakeFiles/gpuxgboost.dir/plugin/updater_gpu/src/gpuxgboost_generated_updater_gpu.cu.o ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/build/nccl/libnccl.a)
+    list(
+      APPEND
+      XGBOOST_LIB_DEPS
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/build/CMakeFiles/gpuxgboost.dir/plugin/updater_gpu/src/gpuxgboost_generated_updater_gpu.cu.o
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/build/nccl/libnccl.a)
     ExternalProject_Add(
       xgboost_cub
       PREFIX xgboost_cub
       URL https://github.com/NVlabs/cub/archive/1.6.4.zip
-      URL_HASH SHA256=4198e9c447a1e2a963b9e0e4d861df48baa47fb02e5e4fc507d1834afc99185a
+      URL_HASH
+        SHA256=4198e9c447a1e2a963b9e0e4d861df48baa47fb02e5e4fc507d1834afc99185a
       INSTALL_COMMAND ""
       BUILD_COMMAND ""
-      CONFIGURE_COMMAND ""
-    )
+      CONFIGURE_COMMAND "")
     ExternalProject_Add(
       xgboost
       PREFIX xgboost
@@ -992,16 +1099,15 @@ if (USE_XGBOOST)
       GIT_TAG 84d992babcc370bff6cf4fe89985f072b0b91a64
       GIT_CONFIG advice.detachedHead=false
       PATCH_COMMAND
-        git reset --hard &&
-        patch -p1 < ${CMAKE_SOURCE_DIR}/patches/xgboost/static-lib.patch &&
-        cd dmlc-core && git checkout 13d5acb8ba7e79550bbf2f730f1a3944ff0fa68b
+        git reset --hard && patch -p1 <
+        ${CMAKE_SOURCE_DIR}/patches/xgboost/static-lib.patch && cd dmlc-core &&
+        git checkout 13d5acb8ba7e79550bbf2f730f1a3944ff0fa68b
       CMAKE_ARGS
         -DPLUGIN_UPDATER_GPU=ON
         -DCUB_DIRECTORY=${CMAKE_BINARY_DIR}/xgboost_cub/src/xgboost_cub
         -DCUDA_NVCC_FLAGS="-Xcompiler -fPIC --expt-extended-lambda $CUDA_ARCH_FLAGS"
       INSTALL_COMMAND ""
-      DEPENDS xgboost_cub
-    )
+      DEPENDS xgboost_cub)
   else()
     ExternalProject_Add(
       xgboost
@@ -1011,124 +1117,144 @@ if (USE_XGBOOST)
       GIT_CONFIG advice.detachedHead=false
       UPDATE_DISCONNECTED 1
       PATCH_COMMAND
-        git reset --hard &&
-        patch -p1 < ${CMAKE_SOURCE_DIR}/patches/xgboost/static-lib.patch &&
-        cd dmlc-core && git checkout 13d5acb8ba7e79550bbf2f730f1a3944ff0fa68b
-      INSTALL_COMMAND ""
-    )
+        git reset --hard && patch -p1 <
+        ${CMAKE_SOURCE_DIR}/patches/xgboost/static-lib.patch && cd dmlc-core &&
+        git checkout 13d5acb8ba7e79550bbf2f730f1a3944ff0fa68b
+      INSTALL_COMMAND "")
   endif()
-  set(XGBOOST_INC_DIR ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/include ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/src ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/rabit/include ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/dmlc-core/include ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/dmlc-core/src/)
-  set(XGBOOST_LIB_DIR ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/lib ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/ ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/dmlc-core)
+  set(XGBOOST_INC_DIR
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/include
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/src
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/rabit/include
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/dmlc-core/include
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost/dmlc-core/src/)
+  set(XGBOOST_LIB_DIR
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/lib
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/
+      ${CMAKE_BINARY_DIR}/xgboost/src/xgboost-build/dmlc-core)
 endif()
 
-if (USE_TSNE)
+if(USE_TSNE)
   message(STATUS "Configuring T-SNE")
   add_definitions(-DUSE_TSNE)
   set(TSNE_LIB_DEPS -ltsne_multicore -lglog)
   ExternalProject_Add(
-      Multicore-TSNE
-      PREFIX Multicore-TSNE
-      UPDATE_DISCONNECTED 1
-      GIT_REPOSITORY https://github.com/beniz/Multicore-TSNE.git
-      SOURCE_SUBDIR multicore_tsne
-      CMAKE_ARGS -Wno-dev
-      INSTALL_COMMAND ""
-   )
-  set(TSNE_INC_DIR ${CMAKE_BINARY_DIR}/Multicore-TSNE/src/Multicore-TSNE/multicore_tsne)
+    Multicore-TSNE
+    PREFIX Multicore-TSNE
+    UPDATE_DISCONNECTED 1
+    GIT_REPOSITORY https://github.com/beniz/Multicore-TSNE.git
+    SOURCE_SUBDIR multicore_tsne
+    CMAKE_ARGS -Wno-dev
+    INSTALL_COMMAND "")
+  set(TSNE_INC_DIR
+      ${CMAKE_BINARY_DIR}/Multicore-TSNE/src/Multicore-TSNE/multicore_tsne)
   set(TSNE_LIB_DIR ${CMAKE_BINARY_DIR}/Multicore-TSNE/src/Multicore-TSNE-build)
 endif()
 
-if (USE_TENSORRT)
+if(USE_TENSORRT)
   add_definitions(-DUSE_TENSORRT)
-  if (EXISTS ${TENSORRT_DIR}/libprotobuf.a)
-    message(ERROR "there is a protobuf in ${TENSORRT_DIR}, it is very likely to cause link problem, you should remove it, we use system or internal ones")
+  if(EXISTS ${TENSORRT_DIR}/libprotobuf.a)
+    message(
+      ERROR
+      "there is a protobuf in ${TENSORRT_DIR}, it is very likely to cause link problem, you should remove it, we use system or internal ones"
+    )
   endif()
 
-  if (JETSON)
+  if(JETSON)
     set(TRTTESTDIR /usr/lib/aarch64-linux-gnu)
     set(TENSORRT_LIB_DIR /usr/lib/aarch64-linux-gnu)
     set(TENSORRT_INC_DIR /usr/include/aarch64-linux-gnu)
   elseif(DEFINED TENSORRT_DIR)
     set(TRTTESTDIR ${TENSORRT_DIR}/lib)
-    set(TENSORRT_LIB_DIR  ${TENSORRT_DIR}/lib )
+    set(TENSORRT_LIB_DIR ${TENSORRT_DIR}/lib)
     set(TENSORRT_INC_DIR ${TENSORRT_DIR}/include)
-  elseif (DEFINED TENSORRT_LIB_DIR AND DEFINED TENSORRT_INC_DIR)
+  elseif(DEFINED TENSORRT_LIB_DIR AND DEFINED TENSORRT_INC_DIR)
     set(TRTTESTDIR TENSORRT_LIB_DIR)
   else()
     set(TRTTESTDIR /usr/lib/x86_64-linux-gnu)
-    set(TENSORRT_LIB_DIR  /usr/lib/x86_64-linux-gnu)
+    set(TENSORRT_LIB_DIR /usr/lib/x86_64-linux-gnu)
     set(TENSORRT_INC_DIR /usr/include/x86_64-linux-gnu)
   endif()
 
-  if (NOT EXISTS "${TRTTESTDIR}/libnvinfer.so.8")
-    message(FATAL_ERROR "Could not find TensorRT ${TRTTESTDIR}/libnvinfer.so.8, please provide tensorRT location as TENSORRT_DIR or (TENSORRT_LIB_DIR _and_ TENSORRT_INC_DIR)")
+  if(NOT EXISTS "${TRTTESTDIR}/libnvinfer.so.8")
+    message(
+      FATAL_ERROR
+        "Could not find TensorRT ${TRTTESTDIR}/libnvinfer.so.8, please provide tensorRT location as TENSORRT_DIR or (TENSORRT_LIB_DIR _and_ TENSORRT_INC_DIR)"
+    )
   else()
     message(STATUS "Found TensorRT libraries : ${TRTTESTDIR}/libnvinfer.so.8")
   endif()
 
-    set(TENSORRT_LIB_DIR ${CMAKE_BINARY_DIR}/tensorrt-oss/bin/ ${TENSORRT_LIB_DIR})
-	set(TENSORRT_LIBS nvinfer nvcaffeparser nvinfer_plugin nvonnxparser )
+  set(TENSORRT_LIB_DIR ${CMAKE_BINARY_DIR}/tensorrt-oss/bin/
+                       ${TENSORRT_LIB_DIR})
+  set(TENSORRT_LIBS nvinfer nvcaffeparser nvinfer_plugin nvonnxparser)
 
-    if (NOT TENSORRT_VERSION)
-        if (EXISTS "${TRTTESTDIR}/libnvinfer.so.8")
-            set(TENSORRT_VERSION v8.6.1)
-            message(STATUS "Found TensorRT libraries version 8")
-        else()
-            message(FATAL_ERROR "No supported TensorRT version found")
-        endif()
+  if(NOT TENSORRT_VERSION)
+    if(EXISTS "${TRTTESTDIR}/libnvinfer.so.8")
+      set(TENSORRT_VERSION v8.6.1)
+      message(STATUS "Found TensorRT libraries version 8")
+    else()
+      message(FATAL_ERROR "No supported TensorRT version found")
     endif()
-    add_definitions(-DTENSORRT_VERSION=${TENSORRT_VERSION})
+  endif()
+  add_definitions(-DTENSORRT_VERSION=${TENSORRT_VERSION})
 
-    set(TRT_FLAGS
+  set(TRT_FLAGS
       -DTRT_OUT_DIR=${CMAKE_BINARY_DIR}/tensorrt-oss/bin
-      -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc
-      -DBUILD_SAMPLES=OFF
-      -DPY_VERSION=3
-    )
+      -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DBUILD_SAMPLES=OFF
+      -DPY_VERSION=3)
 
-    if (JETSON)
-      list(APPEND TRT_FLAGS -DCMAKE_C_COMPILER=/usr/bin/cc)
-    endif()
+  if(JETSON)
+    list(APPEND TRT_FLAGS -DCMAKE_C_COMPILER=/usr/bin/cc)
+  endif()
 
-	set(TRT_PATCHES_PATH ${CMAKE_BINARY_DIR}/patches/trt)
-	set(TRT_PATCHES
+  set(TRT_PATCHES_PATH ${CMAKE_BINARY_DIR}/patches/trt)
+  set(TRT_PATCHES
       ${TRT_PATCHES_PATH}/0003-c++14.patch
       ${TRT_PATCHES_PATH}/0009-fix_compil_order.patch
-      ${TRT_PATCHES_PATH}/0011-fix_plugin_makefile_cub.patch
-      )
+      ${TRT_PATCHES_PATH}/0011-fix_plugin_makefile_cub.patch)
 
-    # Tensorrt uses its own protobuf version (3.0.0) and this cannot be overrided
-    # At best we can set the version it will internally build
-    set(TENSORRT_COMPLETE ${CMAKE_BINARY_DIR}/CMakeFiles/tensorrt-oss-complete)
-    ExternalProject_Add(
-      tensorrt-oss
-      PREFIX tensorrt-oss
-      GIT_REPOSITORY https://github.com/NVIDIA/TensorRT.git
-      GIT_TAG ${TENSORRT_VERSION}
-      GIT_CONFIG advice.detachedHead=false
-      UPDATE_DISCONNECTED 1
-      PATCH_COMMAND sh ${CMAKE_SOURCE_DIR}/cmake/patch_external.sh TENSORRT ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss-stamp tensorrt-oss-download tensorrt-oss-patch ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss ${TRT_PATCHES}
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND sh ${CMAKE_SOURCE_DIR}/cmake/build_external.sh TENSORRT ${CMAKE_BINARY_DIR}/tensorrt-oss ${TENSORRT_COMPLETE} src/tensorrt-oss src/tensorrt-oss-build ${N} all ${CMAKE_COMMAND} ${TRT_FLAGS}
-      INSTALL_COMMAND ""
-    )
+  # Tensorrt uses its own protobuf version (3.0.0) and this cannot be overrided
+  # At best we can set the version it will internally build
+  set(TENSORRT_COMPLETE ${CMAKE_BINARY_DIR}/CMakeFiles/tensorrt-oss-complete)
+  ExternalProject_Add(
+    tensorrt-oss
+    PREFIX tensorrt-oss
+    GIT_REPOSITORY https://github.com/NVIDIA/TensorRT.git
+    GIT_TAG ${TENSORRT_VERSION}
+    GIT_CONFIG advice.detachedHead=false
+    UPDATE_DISCONNECTED 1
+    PATCH_COMMAND
+      sh ${CMAKE_SOURCE_DIR}/cmake/patch_external.sh TENSORRT
+      ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss-stamp
+      tensorrt-oss-download tensorrt-oss-patch
+      ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss ${TRT_PATCHES}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND
+      sh ${CMAKE_SOURCE_DIR}/cmake/build_external.sh TENSORRT
+      ${CMAKE_BINARY_DIR}/tensorrt-oss ${TENSORRT_COMPLETE} src/tensorrt-oss
+      src/tensorrt-oss-build ${N} all ${CMAKE_COMMAND} ${TRT_FLAGS}
+    INSTALL_COMMAND "")
 
-    # Use our tensorrt-oss header versions first
-    list(INSERT TENSORRT_INC_DIR 0 ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss/include)
+  # Use our tensorrt-oss header versions first
+  list(INSERT TENSORRT_INC_DIR 0
+       ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss/include)
 
-    # onnx.pb.h
-    set(ONNX_PROTO ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss/parsers/onnx/third_party/onnx/onnx/onnx.proto)
-    add_custom_command(
-        OUTPUT ${CMAKE_BINARY_DIR}/src/onnx.pb.h ${CMAKE_BINARY_DIR}/src/onnx.pb.cc
-        COMMAND LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR} ${PROTOBUF_PROTOC} --proto_path=${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss/parsers/onnx/third_party/onnx/onnx/ --cpp_out=${CMAKE_BINARY_DIR}/src ${ONNX_PROTO}
-        COMMENT Generating onnx.pb.h and onnx.pb.cc
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        DEPENDS protobuf tensorrt-oss
-    )
-    add_custom_target(
-        onnx_pb_h
-        DEPENDS ${CMAKE_BINARY_DIR}/src/onnx.pb.h ${CMAKE_BINARY_DIR}/src/onnx.pb.cc
-    )
+  # onnx.pb.h
+  set(ONNX_PROTO
+      ${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss/parsers/onnx/third_party/onnx/onnx/onnx.proto
+  )
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/src/onnx.pb.h ${CMAKE_BINARY_DIR}/src/onnx.pb.cc
+    COMMAND
+      LD_LIBRARY_PATH=${PROTOBUF_LIB_DIR} ${PROTOBUF_PROTOC}
+      --proto_path=${CMAKE_BINARY_DIR}/tensorrt-oss/src/tensorrt-oss/parsers/onnx/third_party/onnx/onnx/
+      --cpp_out=${CMAKE_BINARY_DIR}/src ${ONNX_PROTO}
+    COMMENT Generating onnx.pb.h and onnx.pb.cc
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS protobuf tensorrt-oss)
+  add_custom_target(onnx_pb_h DEPENDS ${CMAKE_BINARY_DIR}/src/onnx.pb.h
+                                      ${CMAKE_BINARY_DIR}/src/onnx.pb.cc)
 endif()
 
 set(OATPP_VERSION "1.3.0")
@@ -1137,132 +1263,118 @@ set(OATPP_SWAGGER_VERSION "ed5251c580e2e98beb50d818bcea8ddc91419d8c")
 # 1.3 + memory leak patch
 set(OATPP_ZLIB_VERSION "e7318068ae1b24b7d690f374ffbcd9c8f691336b")
 ExternalProject_Add(
-    oatpp
-    PREFIX oatpp
-    UPDATE_DISCONNECTED 1
-    URL https://github.com/oatpp/oatpp/archive/${OATPP_VERSION}.tar.gz
-    URL_HASH SHA256=e1f80fa8fd7a74da6737e7fee1a4db68b4d7085a3f40e7d550752d6ff5714583
-    BUILD_IN_SOURCE true
-    CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DOATPP_INSTALL=OFF -DOATPP_BUILD_TESTS=OFF
-    INSTALL_COMMAND ""
-)
+  oatpp
+  PREFIX oatpp
+  UPDATE_DISCONNECTED 1
+  URL https://github.com/oatpp/oatpp/archive/${OATPP_VERSION}.tar.gz
+  URL_HASH
+    SHA256=e1f80fa8fd7a74da6737e7fee1a4db68b4d7085a3f40e7d550752d6ff5714583
+  BUILD_IN_SOURCE true
+  CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+             -DOATPP_INSTALL=OFF -DOATPP_BUILD_TESTS=OFF
+  INSTALL_COMMAND "")
 ExternalProject_Add(
-    oatpp-zlib
-    PREFIX oatpp-zlib
-    URL https://github.com/oatpp/oatpp-zlib/archive/${OATPP_ZLIB_VERSION}.tar.gz
-    URL_HASH SHA256=17d85ace758ac3b924802d10473a8ed4cf6ee2ffa125022d5a64debf564cf3c3
-    CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=Release
-        -DBUILD_SHARED_LIBS=OFF
-        -DOATPP_BUILD_TESTS=OFF
-        -DOATPP_INSTALL=OFF
-        -DOATPP_MODULES_LOCATION=CUSTOM
-        -DOATPP_DIR_SRC=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
-        -DOATPP_DIR_LIB=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
-    BUILD_IN_SOURCE true
-    INSTALL_COMMAND ""
-    DEPENDS oatpp
-)
+  oatpp-zlib
+  PREFIX oatpp-zlib
+  URL https://github.com/oatpp/oatpp-zlib/archive/${OATPP_ZLIB_VERSION}.tar.gz
+  URL_HASH
+    SHA256=17d85ace758ac3b924802d10473a8ed4cf6ee2ffa125022d5a64debf564cf3c3
+  CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+             -DBUILD_SHARED_LIBS=OFF
+             -DOATPP_BUILD_TESTS=OFF
+             -DOATPP_INSTALL=OFF
+             -DOATPP_MODULES_LOCATION=CUSTOM
+             -DOATPP_DIR_SRC=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
+             -DOATPP_DIR_LIB=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
+  BUILD_IN_SOURCE true
+  INSTALL_COMMAND ""
+  DEPENDS oatpp)
 
 set(OATPP_LIB_DEPS
     ${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src/liboatpp.a
-    ${CMAKE_BINARY_DIR}/oatpp-zlib/src/oatpp-zlib/src/liboatpp-zlib.a
-    z  # zlib
+    ${CMAKE_BINARY_DIR}/oatpp-zlib/src/oatpp-zlib/src/liboatpp-zlib.a z # zlib
 )
-include_directories(
-    SYSTEM ${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
-    SYSTEM ${CMAKE_BINARY_DIR}/oatpp-zlib/src/oatpp-zlib/src
-)
-set(OATPP_INCLUDE_DIRS
-    ${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
-    ${CMAKE_BINARY_DIR}/oatpp-zlib/src/oatpp-zlib/src
-)
+include_directories(SYSTEM ${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src SYSTEM
+                    ${CMAKE_BINARY_DIR}/oatpp-zlib/src/oatpp-zlib/src)
+set(OATPP_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
+                       ${CMAKE_BINARY_DIR}/oatpp-zlib/src/oatpp-zlib/src)
 
 if(USE_OATPP_SWAGGER)
-    ExternalProject_Add(
-        oatpp-swagger
-        PREFIX oatpp-swagger
-        URL https://github.com/oatpp/oatpp-swagger/archive/${OATPP_SWAGGER_VERSION}.tar.gz
-        URL_HASH SHA256=afe026d6ba10f5cf43e65578acb80bb82f189d311ed6a0d7c4b8f4bd2b07e55f
-        BUILD_IN_SOURCE true
-        INSTALL_COMMAND ""
-        CMAKE_ARGS
-            -DCMAKE_BUILD_TYPE=Release
-            -DBUILD_SHARED_LIBS=OFF
-            -DOATPP_BUILD_TESTS=OFF
-            -DOATPP_INSTALL=OFF
-            -DOATPP_MODULES_LOCATION=CUSTOM
-            -DOATPP_DIR_SRC=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
-            -DOATPP_DIR_LIB=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
-        DEPENDS oatpp
-    )
+  ExternalProject_Add(
+    oatpp-swagger
+    PREFIX oatpp-swagger
+    URL https://github.com/oatpp/oatpp-swagger/archive/${OATPP_SWAGGER_VERSION}.tar.gz
+    URL_HASH
+      SHA256=afe026d6ba10f5cf43e65578acb80bb82f189d311ed6a0d7c4b8f4bd2b07e55f
+    BUILD_IN_SOURCE true
+    INSTALL_COMMAND ""
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+               -DBUILD_SHARED_LIBS=OFF
+               -DOATPP_BUILD_TESTS=OFF
+               -DOATPP_INSTALL=OFF
+               -DOATPP_MODULES_LOCATION=CUSTOM
+               -DOATPP_DIR_SRC=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
+               -DOATPP_DIR_LIB=${CMAKE_BINARY_DIR}/oatpp/src/oatpp/src
+    DEPENDS oatpp)
 
-    list(APPEND OATPP_LIB_DEPS
-        ${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/src/liboatpp-swagger.a
-    )
-    include_directories(
-        SYSTEM ${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/src
-    )
-    list(APPEND OATPP_INCLUDE_DIRS
-        ${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/src
-    )
-    # FIXME(sileht): we should copy res outside build dir and dynamically looks at runtime at different places
-    add_definitions("-DUSE_OATPP_SWAGGER")
-    add_definitions("-DOATPP_SWAGGER_RES_PATH=\"${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/res/\"")
+  list(
+    APPEND OATPP_LIB_DEPS
+    ${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/src/liboatpp-swagger.a)
+  include_directories(SYSTEM
+                      ${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/src)
+  list(APPEND OATPP_INCLUDE_DIRS
+       ${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/src)
+  # FIXME(sileht): we should copy res outside build dir and dynamically looks at
+  # runtime at different places
+  add_definitions("-DUSE_OATPP_SWAGGER")
+  add_definitions(
+    "-DOATPP_SWAGGER_RES_PATH=\"${CMAKE_BINARY_DIR}/oatpp-swagger/src/oatpp-swagger/res/\""
+  )
 endif()
 
-if (USE_HTTP_SERVER)
-        ExternalProject_Add(
-        cpp-netlib
-        PREFIX cpp-netlib
-        URL http://downloads.cpp-netlib.org/0.11.2/cpp-netlib-0.11.2-final.tar.gz
-        URL_HASH SHA256=71953379c5a6fab618cbda9ac6639d87b35cab0600a4450a7392bc08c930f2b1
-        BUILD_IN_SOURCE true
-        CMAKE_ARGS
-            -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
-            -DCPP-NETLIB_BUILD_EXAMPLES=OFF
-            -DCPP-NETLIB_BUILD_TESTS=OFF
-        INSTALL_COMMAND ""
-    )
-    set(HTTP_LIB_DEPS ${CMAKE_BINARY_DIR}/cpp-netlib/src/cpp-netlib/libs/network/src/libcppnetlib-uri.a crypto ssl)
-    set(HTTP_INCLUDE_DIR ${CMAKE_BINARY_DIR}/cpp-netlib/src/cpp-netlib)
-    include_directories(SYSTEM ${HTTP_INCLUDE_DIR})
+if(USE_HTTP_SERVER)
+  ExternalProject_Add(
+    cpp-netlib
+    PREFIX cpp-netlib
+    URL http://downloads.cpp-netlib.org/0.11.2/cpp-netlib-0.11.2-final.tar.gz
+    URL_HASH
+      SHA256=71953379c5a6fab618cbda9ac6639d87b35cab0600a4450a7392bc08c930f2b1
+    BUILD_IN_SOURCE true
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+               -DCPP-NETLIB_BUILD_EXAMPLES=OFF -DCPP-NETLIB_BUILD_TESTS=OFF
+    INSTALL_COMMAND "")
+  set(HTTP_LIB_DEPS
+      ${CMAKE_BINARY_DIR}/cpp-netlib/src/cpp-netlib/libs/network/src/libcppnetlib-uri.a
+      crypto
+      ssl)
+  set(HTTP_INCLUDE_DIR ${CMAKE_BINARY_DIR}/cpp-netlib/src/cpp-netlib)
+  include_directories(SYSTEM ${HTTP_INCLUDE_DIR})
 endif()
 
 # main library, main & tests
-if (APPLE)
-   include_directories("/opt/homebrew/include/")
-   include_directories("/opt/homebrew/opt/libarchive/include/")
-   include_directories("/opt/homebrew/include/eigen3")
-   include_directories("/opt/homebrew/include/utf8cpp/")
+if(APPLE)
+  include_directories("/opt/homebrew/include/")
+  include_directories("/opt/homebrew/opt/libarchive/include/")
+  include_directories("/opt/homebrew/include/eigen3")
+  include_directories("/opt/homebrew/include/utf8cpp/")
 
-   link_directories("/opt/homebrew/lib/")
+  link_directories("/opt/homebrew/lib/")
 endif()
 
 include_directories("${PROJECT_SOURCE_DIR}/src")
-# add the binary tree to the search path for include files
-# so that we will find dd_config.h
+# add the binary tree to the search path for include files so that we will find
+# dd_config.h
 include_directories("${PROJECT_BINARY_DIR}")
 # caffe.pb.h, ...
 include_directories(${CMAKE_BINARY_DIR}/src)
 
+include_directories(${CAFFE_INC_DIR} ${XGBOOST_INC_DIR} ${TSNE_INC_DIR}
+                    ${TORCH_INC_DIR} ${NCNN_INC_DIR})
+include_directories(SYSTEM ${TENSORRT_INC_DIR})
 include_directories(
-    ${CAFFE_INC_DIR}
-    ${XGBOOST_INC_DIR}
-    ${TSNE_INC_DIR}
-    ${TORCH_INC_DIR}
-    ${NCNN_INC_DIR}
-)
-include_directories(
-    SYSTEM ${TENSORRT_INC_DIR}
-)
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/backends/caffe
-    ${CMAKE_SOURCE_DIR}/backends/xgb
-    ${CMAKE_SOURCE_DIR}/backends/tf
-    ${CMAKE_SOURCE_DIR}/backends/dlib
-    ${CMAKE_SOURCE_DIR}/backends/tsne
-)
+  ${CMAKE_SOURCE_DIR}/src/backends/caffe ${CMAKE_SOURCE_DIR}/backends/xgb
+  ${CMAKE_SOURCE_DIR}/backends/tf ${CMAKE_SOURCE_DIR}/backends/dlib
+  ${CMAKE_SOURCE_DIR}/backends/tsne)
 include_directories(${VARIANT_INCLUDE_DIRS})
 
 add_subdirectory(src)
@@ -1281,16 +1393,14 @@ set(COMMON_INCLUDE_DIRS
     ${TORCH_INC_DIR}
     ${TENSORRT_INC_DIR}
     ${NCNN_INC_DIR}
-
     ${CMAKE_SOURCE_DIR}/src/backends/caffe
     ${CMAKE_SOURCE_DIR}/backends/xgb
     ${CMAKE_SOURCE_DIR}/backends/tf
     ${CMAKE_SOURCE_DIR}/backends/dlib
-    ${CMAKE_SOURCE_DIR}/backends/tsne
-)
+    ${CMAKE_SOURCE_DIR}/backends/tsne)
 
-if (CUDA_FOUND)
-    list(APPEND COMMON_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
+if(CUDA_FOUND)
+  list(APPEND COMMON_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
 endif()
 
 set(COMMON_LINK_DIRS
@@ -1303,11 +1413,20 @@ set(COMMON_LINK_DIRS
     ${TSNE_LIB_DIR}
     ${NCNN_LIB_DIR}
     ${FAISS_LIB_DIR}
-    ${TORCH_LIB_DIR}
-)
+    ${TORCH_LIB_DIR})
 
 set(COMMON_LINK_LIBS
-    ddetect ${DLIB_LIB_DEPS} ${TENSORRT_LIBS} ${CUDA_LIB_DEPS} gflags ${OpenCV_LIBS} curlpp curl ${Boost_LIBRARIES} archive ${OPENMP_LIBRARIES}
+    ddetect
+    ${DLIB_LIB_DEPS}
+    ${TENSORRT_LIBS}
+    ${CUDA_LIB_DEPS}
+    gflags
+    ${OpenCV_LIBS}
+    curlpp
+    curl
+    ${Boost_LIBRARIES}
+    archive
+    ${OPENMP_LIBRARIES}
     ${PROTOBUF_LIB_DEPS}
     ${HTTP_LIB_DEPS}
     ${SPDLOG_LIB_DEPS}
@@ -1319,80 +1438,78 @@ set(COMMON_LINK_LIBS
     ${TSNE_LIB_DEPS}
     ${NCNN_LIB_DEPS}
     ${FAISS_LIB_DEPS}
-    ${TORCH_LIB_DEPS}
-)
-if (USE_HDF5)
-    find_library(HDF5_LIBRARY NAMES hdf5_cpp hdf5_serial_cpp)
-    message(STATUS "HDF5 library at ${HDF5_LIBRARY}")
-    list(APPEND COMMON_LINK_LIBS ${HDF5_LIBRARY})
+    ${TORCH_LIB_DEPS})
+if(USE_HDF5)
+  find_library(HDF5_LIBRARY NAMES hdf5_cpp hdf5_serial_cpp)
+  message(STATUS "HDF5 library at ${HDF5_LIBRARY}")
+  list(APPEND COMMON_LINK_LIBS ${HDF5_LIBRARY})
 endif()
 
 # configure config.cmake for external application
 get_directory_property(COMMON_DEFINITIONS COMPILE_DEFINITIONS)
 
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/DeepDetectConfig.cmake.in
-    ${CMAKE_BINARY_DIR}/DeepDetectConfig.cmake
-)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DeepDetectConfig.cmake.in
+               ${CMAKE_BINARY_DIR}/DeepDetectConfig.cmake)
 
 add_subdirectory(main)
 
 # templates
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/templates/ ${CMAKE_BINARY_DIR}/templates)
+execute_process(
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/templates/
+          ${CMAKE_BINARY_DIR}/templates)
 
 # examples
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/examples/ ${CMAKE_BINARY_DIR}/examples)
+execute_process(
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/examples/
+          ${CMAKE_BINARY_DIR}/examples)
 
 # patches
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/patches/ ${CMAKE_BINARY_DIR}/patches)
+execute_process(
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/patches/
+          ${CMAKE_BINARY_DIR}/patches)
 
 # unit testing
-if (BUILD_TESTS)
+if(BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
 
 # unit testing
-if (BUILD_TOOLS)
+if(BUILD_TOOLS)
   add_subdirectory(tools)
 endif()
 
 # Get all project files
-file(GLOB_RECURSE ALL_SOURCE_FILES src/*.cpp src/*.hpp src/*.h src/*.c tests/*.cc src/*.cc)
+file(
+  GLOB_RECURSE
+  ALL_SOURCE_FILES
+  src/*.cpp
+  src/*.hpp
+  src/*.h
+  src/*.c
+  tests/*.cc
+  src/*.cc)
 list(FILTER ALL_SOURCE_FILES EXCLUDE REGEX "^${CMAKE_SOURCE_DIR}/src/ext/.*$")
 
 # ubuntu 20: clang-format-10, ubuntu 22: clang-format 14
-find_program(CLANG_FORMAT_BIN NAMES clang-format clang-format-14 clang-format-10)
+find_program(CLANG_FORMAT_BIN NAMES clang-format clang-format-14
+                                    clang-format-10)
+add_custom_target(clang-format COMMAND ${CLANG_FORMAT_BIN} -style=file -i
+                                       ${ALL_SOURCE_FILES})
 add_custom_target(
-        clang-format
-        COMMAND ${CLANG_FORMAT_BIN}
-        -style=file
-        -i
-        ${ALL_SOURCE_FILES}
-)
-add_custom_target(
-        clang-format-check
-        COMMAND ${CLANG_FORMAT_BIN}
-        --dry-run
-        --Werror
-        --ferror-limit=10
-        -style=file
-        -i
-        ${ALL_SOURCE_FILES}
-)
+  clang-format-check
+  COMMAND ${CLANG_FORMAT_BIN} --dry-run --Werror --ferror-limit=10 -style=file
+          -i ${ALL_SOURCE_FILES})
 
 option(INSTALL_GIT_HOOKS "install client side git hook" OFF)
-if (INSTALL_GIT_HOOKS)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tools/git-pre-commit-hook
-                   ${CMAKE_CURRENT_SOURCE_DIR}/.git/hooks/pre-commit @ONLY)
+if(INSTALL_GIT_HOOKS)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tools/git-pre-commit-hook
+                 ${CMAKE_CURRENT_SOURCE_DIR}/.git/hooks/pre-commit @ONLY)
 endif()
 
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file (
-  "${PROJECT_SOURCE_DIR}/src/dd_config.h.in"
-  "${PROJECT_BINARY_DIR}/dd_config.h"
-)
+# configure a header file to pass some of the CMake settings to the source code
+configure_file("${PROJECT_SOURCE_DIR}/src/dd_config.h.in"
+               "${PROJECT_BINARY_DIR}/dd_config.h")
 
 # status
 message(STATUS "RELEASE:               ${RELEASE}")
