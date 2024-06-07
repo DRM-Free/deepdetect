@@ -50,6 +50,7 @@ endif()
 if(BUILD_OPENCV)
   message("Building opencv from source")
   if(OpenCV_DIR)
+    message(STATUS "OpenCV_DIR: ${OpenCV_DIR}")
     message(
       FATAL_ERROR
         "Please choose between building opencv from source and providing a local opencv install - BUILD_OPENCV and OpenCV_DIR are exclusive"
@@ -729,24 +730,23 @@ message(
     "OpenCV ${OPENCV_VERSION} (${OpenCV_VERSION}) found (${OpenCV_CONFIG_PATH})"
 )
 
-if (BUILD_OPENCV)
-   # Fetch and build OpenCV from source
-    include(FetchContent)
-    FetchContent_Declare(
-        opencv
-        GIT_REPOSITORY https://github.com/opencv/opencv.git
-        GIT_TAG 4.x  # Change to the desired version
-    )
-    FetchContent_MakeAvailable(opencv)
+if(BUILD_OPENCV)
+  # Fetch and build OpenCV from source
+  include(FetchContent)
+  FetchContent_Declare(
+    opencv
+    GIT_REPOSITORY https://github.com/opencv/opencv.git
+    GIT_TAG 4.x # Change to the desired version
+  )
+  FetchContent_MakeAvailable(opencv)
 
-    # Include directories and link libraries
-    include_directories(${opencv_SOURCE_DIR}/include)
-    link_directories(${opencv_BINARY_DIR})
+  # Include directories and link libraries
+  include_directories(${opencv_SOURCE_DIR}/include)
+  link_directories(${opencv_BINARY_DIR})
 
-    set(OpenCV_LIBS opencv_core opencv_imgcodecs opencv_highgui opencv_imgproc opencv_videoio)
-endif
-
-
+  set(OpenCV_LIBS opencv_core opencv_imgcodecs opencv_highgui opencv_imgproc
+                  opencv_videoio)
+endif()
 
 if(USE_CUDA_CV)
   message(STATUS "Using CUDA OpenCV")
