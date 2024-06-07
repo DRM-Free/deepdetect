@@ -709,7 +709,7 @@ if(USE_CUDA_CV)
   list(APPEND OPENCV_MODULES cudaimgproc cudaarithm cudawarping cudacodec)
 endif()
 
-if(USE_OPENCV_VERSION STREQUAL "")
+if(NOT BUILD_OPENCV AND USE_OPENCV_VERSION STREQUAL "")
   find_package(OpenCV 3 QUIET COMPONENTS ${OPENCV_MODULES})
   if(NOT OpenCV_FOUND)
     find_package(OpenCV 4 QUIET COMPONENTS ${OPENCV_MODULES})
@@ -728,6 +728,25 @@ message(
   STATUS
     "OpenCV ${OPENCV_VERSION} (${OpenCV_VERSION}) found (${OpenCV_CONFIG_PATH})"
 )
+
+if (BUILD_OPENCV)
+   # Fetch and build OpenCV from source
+    include(FetchContent)
+    FetchContent_Declare(
+        opencv
+        GIT_REPOSITORY https://github.com/opencv/opencv.git
+        GIT_TAG 4.x  # Change to the desired version
+    )
+    FetchContent_MakeAvailable(opencv)
+
+    # Include directories and link libraries
+    include_directories(${opencv_SOURCE_DIR}/include)
+    link_directories(${opencv_BINARY_DIR})
+
+    set(OpenCV_LIBS opencv_core opencv_imgcodecs opencv_highgui opencv_imgproc opencv_videoio)
+endif
+
+
 
 if(USE_CUDA_CV)
   message(STATUS "Using CUDA OpenCV")
