@@ -710,25 +710,27 @@ if(USE_CUDA_CV)
   list(APPEND OPENCV_MODULES cudaimgproc cudaarithm cudawarping cudacodec)
 endif()
 
-if(NOT BUILD_OPENCV AND USE_OPENCV_VERSION STREQUAL "")
-  find_package(OpenCV 3 QUIET COMPONENTS ${OPENCV_MODULES})
-  if(NOT OpenCV_FOUND)
-    find_package(OpenCV 4 QUIET COMPONENTS ${OPENCV_MODULES})
+if(NOT BUILD_OPENCV)
+  if(NOT USE_OPENCV_VERSION STREQUAL "")
+    find_package(OpenCV 3 QUIET COMPONENTS ${OPENCV_MODULES})
+    if(NOT OpenCV_FOUND)
+      find_package(OpenCV 4 QUIET COMPONENTS ${OPENCV_MODULES})
+    endif()
+    if(NOT OpenCV_FOUND)
+      find_package(OpenCV 2 REQUIRED COMPONENTS ${OPENCV_MODULES})
+    endif()
+  else()
+    find_package(OpenCV ${USE_OPENCV_VERSION} REQUIRED
+                 COMPONENTS ${OPENCV_MODULES})
   endif()
-  if(NOT OpenCV_FOUND)
-    find_package(OpenCV 2 REQUIRED COMPONENTS ${OPENCV_MODULES})
-  endif()
-else()
-  find_package(OpenCV ${USE_OPENCV_VERSION} REQUIRED
-               COMPONENTS ${OPENCV_MODULES})
-endif()
 
-set(OPENCV_VERSION ${OpenCV_VERSION_MAJOR})
-include_directories(${OpenCV_INCLUDE_DIRS})
-message(
-  STATUS
-    "OpenCV ${OPENCV_VERSION} (${OpenCV_VERSION}) found (${OpenCV_CONFIG_PATH})"
-)
+  set(OPENCV_VERSION ${OpenCV_VERSION_MAJOR})
+  include_directories(${OpenCV_INCLUDE_DIRS})
+  message(
+    STATUS
+      "OpenCV ${OPENCV_VERSION} (${OpenCV_VERSION}) found (${OpenCV_CONFIG_PATH})"
+  )
+endif()
 
 if(BUILD_OPENCV)
   # Fetch and build OpenCV from source
@@ -736,9 +738,16 @@ if(BUILD_OPENCV)
   FetchContent_Declare(
     opencv
     GIT_REPOSITORY https://github.com/opencv/opencv.git
-    GIT_TAG 4.x # Change to the desired version
+    GIT_TAG 4.x 
   )
   FetchContent_MakeAvailable(opencv)
+
+# Fetch opencv_contrib
+FetchContent_Declare(
+  OpenCVContrib
+  GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
+  GIT_TAG 4.x
+)
 
   # Include directories and link libraries
   include_directories(${opencv_SOURCE_DIR}/include)

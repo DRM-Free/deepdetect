@@ -144,6 +144,18 @@ cpu_build() {
 
 }
 
+if [[-v BUILD_OPENCV ]];
+then 
+git_root=$(git rev-parse --show-toplevel 2> /dev/null)
+# Define the new directory path
+includes_dir="$git_root/includes"
+if [ ! -d "$includes_dir" ]; then
+mkdir "$includes_dir"
+fi
+opencvcontrib_SOURCE_DIR="$includes_dir/opencv_contrib"
+opencv_SOURCE_DIR="$includes_dir/opencv"
+fi
+
 gpu_build() {
     local extra_flags=
     local default_flags="-DUSE_FAISS=ON -DUSE_CUDNN=ON -DUSE_XGBOOST=ON -DUSE_SIMSEARCH=ON -DUSE_TSNE=ON -DUSE_CAFFE=ON"
