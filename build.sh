@@ -121,13 +121,13 @@ show_interactive_platform_selector() {
     fi
 }
 
+
 # Build functions
 cpu_build() {
-
     case ${DEEPDETECT_BUILD} in
 
     "tf")
-        cmake .. -DUSE_TF=ON -DUSE_TF_CPU_ONLY=ON -DUSE_SIMSEARCH=ON -DUSE_TSNE=ON -DUSE_NCNN=OFF -DUSE_CPU_ONLY=ON -DBUILD_OPENCV=${BUILD_OPENCV} -DRELEASE=${DEEPDETECT_RELEASE}
+        cmake .. -DUSE_TF=ON -DUSE_TF_CPU_ONLY=ON -DUSE_SIMSEARCH=ON -DUSE_TSNE=ON -DUSE_NCNN=OFF -DUSE_CPU_ONLY=ON -DBUILD_OPENCV=${BUILD_OPENCV} -DRELEASE=${DEEPDETECT_RELEASE} -DCMAKE_VERBOSE_MAKEFILE="ON"
         make -j6
         ;;
 
@@ -141,21 +141,9 @@ cpu_build() {
         make -j6
         ;;
     esac
-
 }
 
-if [[-v BUILD_OPENCV ]];
-then 
-git_root=$(git rev-parse --show-toplevel 2> /dev/null)
-# Define the new directory path
-includes_dir="$git_root/includes"
-if [ ! -d "$includes_dir" ]; then
-mkdir "$includes_dir"
-fi
-opencvcontrib_SOURCE_DIR="$includes_dir/opencv_contrib"
-opencv_SOURCE_DIR="$includes_dir/opencv"
-fi
-
+echo "DEEPDETECT_OPENCV4_BUILD_PATH: $DEEPDETECT_OPENCV4_BUILD_PATH"
 gpu_build() {
     local extra_flags=
     local default_flags="-DUSE_FAISS=ON -DUSE_CUDNN=ON -DUSE_XGBOOST=ON -DUSE_SIMSEARCH=ON -DUSE_TSNE=ON -DUSE_CAFFE=ON"
@@ -165,7 +153,7 @@ gpu_build() {
         "tensorrt") extra_flags="-DUSE_TENSORRT=ON -DUSE_TORCH=OFF -DUSE_CUDA_CV=ON -DUSE_OPENCV_VERSION=4 -DOpenCV_DIR=${DEEPDETECT_OPENCV4_BUILD_PATH}";;
         *) extra_flags="$default_flags";;
     esac
-    cmake .. $extra_flags -DCUDA_ARCH_FLAGS="${DEEPDETECT_CUDA_ARCH_FLAGS}" -DCUDA_ARCH="${DEEPDETECT_CUDA_ARCH}" "-DBUILD_OPENCV=${BUILD_OPENCV}" "-DRELEASE=${DEEPDETECT_RELEASE}"
+    cmake .. $extra_flags -DCUDA_ARCH_FLAGS="${DEEPDETECT_CUDA_ARCH_FLAGS}" -DCUDA_ARCH="${DEEPDETECT_CUDA_ARCH}" -DBUILD_OPENCV="${BUILD_OPENCV}" -DRELEASE="${DEEPDETECT_RELEASE}" -DCMAKE_VERBOSE_MAKEFILE=ON
     make -j6
 }
 

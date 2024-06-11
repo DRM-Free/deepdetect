@@ -705,7 +705,7 @@ endif() # USE_TF
 # OpenCV
 message(
   STATUS "OpenCV ${USE_OPENCV_VERSION} REQUIRED COMPONENTS ${OPENCV_MODULES}")
-set(OPENCV_MODULES core imgproc highgui imgcodecs videoio)
+set(OPENCV_MODULES core imgproc highgui imgcodecs videoio cudev)
 if(USE_CUDA_CV)
   list(APPEND OPENCV_MODULES cudaimgproc cudaarithm cudawarping cudacodec)
 endif()
@@ -733,30 +733,58 @@ if(NOT BUILD_OPENCV)
 endif()
 
 if(BUILD_OPENCV)
-  # Fetch and build OpenCV from source
-  include(FetchContent)
-  FetchContent_Declare(
-    opencv
+ExternalProject_Add(
+    OpenCV
+    PREFIX ${CMAKE_BINARY_DIR}/opencv
     GIT_REPOSITORY https://github.com/opencv/opencv.git
-    GIT_TAG 4.x 
-  )
-  FetchContent_MakeAvailable(opencv)
-
-# Fetch opencv_contrib
-FetchContent_Declare(
-  OpenCVContrib
-  GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
-  GIT_TAG 4.x
+    GIT_TAG ${OpenCV_VERSION}
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/opencv/install
+               -DBUILD_SHARED_LIBS=ON
+               -DBUILD_LIST=core,imgproc,highgui,imgcodecs,videoio
 )
 
-  # Include directories and link libraries
-  include_directories(${opencv_SOURCE_DIR}/include)
-  link_directories(${opencv_BINARY_DIR})
+# Define the external project for OpenCV contrib
+ExternalProject_Add(OpenCVContrib
+    PREFIX ${CMAKE_BINARY_DIR}/opencv_contrib
+    GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
+    GIT_TAG ${OpenCV_VERSION}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+)
+  set(OPENCV_INCLUDE_DIR ${CMAKE_BINARY_DIR}/opencv/src)
 
-  set(OpenCV_LIBS opencv_core opencv_imgcodecs opencv_highgui opencv_imgproc
-                  opencv_videoio)
+  link_directories(${OPENCV_INCLUDE_DIR})
+  include_directories(SYSTEM ${OPENCV_INCLUDE_DIR})
+  endif()
+#[[
+# Ensure OpenCV is built after OpenCVContrib
+add_dependencies(OpenCV OpenCVContrib)
+
+# Specify the path to the installed OpenCV libraries and headers
+ExternalProject_Get_Property(OpenCV install_dir)
+set(OpenCV_DIR ${opencv_SOURCE_DIR}/share/OpenCV)
+
+# Make sure our project depends on OpenCV
+add_dependencies(deepdetect OpenCV)
+
+# Specify include directories
+include_directories(${opencv_SOURCE_DIR}/include/opencv4)
+
+# Link OpenCV libraries
+link_directories(${opencv_SOURCE_DIR}/lib)
+
+# Find the OpenCV package
+find_package(OpenCV 4 REQUIRED)
+
+# Specify the executable target
+add_executable(YourExecutableName src/main.cpp)
+
+# Link the executable to the OpenCV libraries
+target_link_libraries(YourExecutableName ${OpenCV_LIBS})
+
 endif()
-
+]]
 if(USE_CUDA_CV)
   message(STATUS "Using CUDA OpenCV")
   add_definitions(-DUSE_CUDA_CV)
